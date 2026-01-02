@@ -59,6 +59,15 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ============== HEALTH CHECK ==============
 
+@app.get("/test")
+def test_endpoint():
+    """Endpoint simple para verificar que la app funciona"""
+    return {
+        "message": "¡Botillería funcionando correctamente!",
+        "status": "success",
+        "timestamp": "2026-01-02"
+    }
+
 @app.get("/health")
 def health_check():
     """Health check endpoint for Railway"""
