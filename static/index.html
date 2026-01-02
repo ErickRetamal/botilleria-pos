@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botillería - POS</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/pos-style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h1>🍺 Botillería POS</h1>
+        </div>
+        <div class="navbar-menu">
+            <button class="nav-btn active" data-view="pos">
+                <span class="icon">💰</span>
+                Punto de Venta
+            </button>
+            <button class="nav-btn" data-view="productos">
+                <span class="icon">📦</span>
+                Productos
+            </button>
+            <button class="nav-btn" data-view="retiros">
+                <span class="icon">📤</span>
+                Retiros
+            </button>
+            <button class="nav-btn" data-view="ventas">
+                <span class="icon">📊</span>
+                Reportes
+            </button>
+        </div>
+        <div class="navbar-stats">
+            <div class="stat-item">
+                <span class="stat-label">Ventas Hoy</span>
+                <span class="stat-value" id="ventasHoy">$0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Retiros Hoy</span>
+                <span class="stat-value warning" id="retirosHoy">$0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Utilidad Neta</span>
+                <span class="stat-value success" id="utilidadNeta">$0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Vista: Punto de Venta -->
+    <div id="view-pos" class="view active">
+        <div class="pos-container">
+            <!-- Panel de Productos -->
+            <div class="products-panel">
+                <div class="search-section">
+                    <input 
+                        type="text" 
+                        id="posSearchInput" 
+                        placeholder="🔍 Buscar por código o nombre (F2)"
+                        class="search-input"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <!-- Filtros por categoría -->
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label class="filter-label">🏷️ Categoría:</label>
+                        <div class="category-filters">
+                            <button class="category-btn active" data-categoria="">Todos</button>
+                            <button class="category-btn" data-categoria="Cervezas">Cervezas</button>
+                            <button class="category-btn" data-categoria="Vinos">Vinos</button>
+                            <button class="category-btn" data-categoria="Licores">Licores</button>
+                            <button class="category-btn" data-categoria="Bebidas">Bebidas</button>
+                            <button class="category-btn" data-categoria="Snacks">Snacks</button>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">💧 Volumen:</label>
+                        <select id="litrosFilter" class="filter-select">
+                            <option value="">Todos los volúmenes</option>
+                            <option value="0.33">330ml</option>
+                            <option value="0.35">350ml</option>
+                            <option value="0.5">500ml</option>
+                            <option value="0.75">750ml</option>
+                            <option value="1">1 Litro</option>
+                            <option value="1.5">1.5 Litros</option>
+                            <option value="2">2 Litros</option>
+                            <option value="3">3 Litros</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">🏭 Marca:</label>
+                        <select id="marcaFilter" class="filter-select">
+                            <option value="">Todas las marcas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Grid de productos -->
+                <div id="posProductsGrid" class="products-grid"></div>
+            </div>
+
+            <!-- Panel de Carrito -->
+            <div class="cart-panel">
+                <div class="cart-header">
+                    <h2>🛒 Carrito de Compra</h2>
+                    <button id="clearCart" class="btn-clear">Limpiar</button>
+                </div>
+
+                <div id="cartItems" class="cart-items"></div>
+
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Items:</span>
+                        <span id="cartItemCount">0</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>TOTAL:</span>
+                        <span id="cartTotal">$0</span>
+                    </div>
+                </div>
+
+                <div class="payment-section">
+                    <label>Método de Pago:</label>
+                    <div class="payment-methods">
+                        <button class="payment-btn active" data-metodo="efectivo">
+                            💵 Efectivo
+                        </button>
+                        <button class="payment-btn" data-metodo="tarjeta">
+                            💳 Tarjeta
+                        </button>
+                        <button class="payment-btn" data-metodo="transferencia">
+                            📱 Transferencia
+                        </button>
+                    </div>
+                </div>
+
+                <button id="processPayment" class="btn-payment">
+                    Cobrar <span id="paymentTotal">$0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista: Productos -->
+    <div id="view-productos" class="view">
+        <div class="content-container">
+            <div class="content-header">
+                <h2>📦 Gestión de Productos</h2>
+                <button id="btnNuevoProducto" class="btn-primary">+ Nuevo Producto</button>
+            </div>
+
+            <!-- Búsqueda rápida con pistola -->
+            <div class="quick-scan-card">
+                <h3>🔫 Escanear Código de Barras</h3>
+                <div class="scan-input-group">
+                    <input 
+                        type="text" 
+                        id="quickScanInput" 
+                        placeholder="Escanea o escribe el código del producto..."
+                        autocomplete="off"
+                        autofocus
+                    >
+                    <button id="quickScanBtn" class="btn-primary">Buscar</button>
+                </div>
+                <p class="scan-hint">💡 Escanea el código o presiona ENTER para buscar</p>
+            </div>
+
+            <!-- Formulario de producto -->
+            <div id="productForm" class="form-card" style="display: none;">
+                <h3 id="formTitle">Nuevo Producto</h3>
+                <form id="productoForm">
+                    <input type="hidden" id="productId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Código *</label>
+                            <input type="text" id="codigo" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Categoría</label>
+                            <select id="categoria">
+                                <option value="">Sin categoría</option>
+                                <option value="Cervezas">Cervezas</option>
+                                <option value="Vinos">Vinos</option>
+                                <option value="Licores">Licores</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Snacks">Snacks</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre del Producto *</label>
+                        <input type="text" id="nombre" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Marca</label>
+                            <input type="text" id="marca" placeholder="Ej: Cristal, Concha y Toro">
+                        </div>
+                        <div class="form-group">
+                            <label>Volumen (Litros)</label>
+                            <input type="number" id="litros" step="0.01" min="0" placeholder="Ej: 0.33, 1, 1.5">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>URL de Imagen</label>
+                        <input type="url" id="imagen_url" placeholder="https://ejemplo.com/imagen.jpg">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea id="descripcion" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Precio Compra *</label>
+                            <input type="number" id="precioCompra" step="1" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Precio Venta *</label>
+                            <input type="number" id="precioVenta" step="1" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Stock Actual</label>
+                            <input type="number" id="stock" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Stock Mínimo</label>
+                            <input type="number" id="stockMinimo" min="0" value="5">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">💾 Guardar</button>
+                        <button type="button" id="cancelForm" class="btn-secondary">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabla de productos -->
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productosTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista: Retiros -->
+    <div id="view-retiros" class="view">
+        <div class="retiro-container">
+            <!-- Panel de Productos -->
+            <div class="products-panel">
+                <div class="content-header">
+                    <h2>📤 Registrar Retiro/Consumo Interno</h2>
+                </div>
+
+                <div class="search-section">
+                    <input 
+                        type="text" 
+                        id="retiroSearchInput" 
+                        placeholder="🔍 Buscar producto para retirar"
+                        class="search-input"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <!-- Grid de productos -->
+                <div id="retiroProductsGrid" class="products-grid"></div>
+            </div>
+
+            <!-- Panel de Carrito de Retiro -->
+            <div class="cart-panel">
+                <div class="cart-header">
+                    <h2>📋 Items a Retirar</h2>
+                    <button id="clearRetiroCart" class="btn-clear">Limpiar</button>
+                </div>
+
+                <div id="retiroCartItems" class="cart-items"></div>
+
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Items:</span>
+                        <span id="retiroItemCount">0</span>
+                    </div>
+                    <div class="summary-row total warning">
+                        <span>PÉRDIDA TOTAL:</span>
+                        <span id="retiroTotal">$0</span>
+                    </div>
+                </div>
+
+                <div class="payment-section">
+                    <button id="processRetiro" class="btn-primary danger">
+                        Registrar Retiro
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Retiros -->
+        <div class="content-container" style="margin-top: 2rem;">
+            <div class="content-header">
+                <h2>📋 Historial de Retiros</h2>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Pérdida</th>
+                        </tr>
+                    </thead>
+                    <tbody id="retirosTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista: Ventas -->
+    <div id="view-ventas" class="view">
+        <div class="content-container">
+            <div class="content-header">
+                <h2>📊 Historial de Ventas</h2>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                            <th>Método</th>
+                            <th>Acciones</th>
+                        </tr>
+     !-- Modal de agregar stock -->
+    <div id="addStockModal" class="modal">
+        <div class="modal-content modal-small">
+            <span class="modal-close" onclick="closeStockModal()">&times;</span>
+            <h2>➕ Agregar Stock</h2>
+            <div id="stockProductInfo" class="product-info-card"></div>
+            <form id="addStockForm" class="stock-form">
+                <div class="form-group">
+                    <label>Cantidad a Agregar *</label>
+                    <input type="number" id="stockQuantity" min="1" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label>Stock Actual</label>
+                    <input type="number" id="currentStock" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Stock Final</label>
+                    <input type="number" id="finalStock" readonly>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">✅ Confirmar</button>
+                    <button type="button" class="btn-secondary" onclick="closeStockModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <               </thead>
+                    <tbody id="ventasTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de detalle de venta -->
+    <div id="ventaModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Detalle de Venta</h2>
+            <div id="ventaDetail"></div>
+        </div>
+    </div>
+
+    <script src="/static/pos-app.js"></script>
+</body>
+</html>
