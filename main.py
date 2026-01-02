@@ -8,23 +8,40 @@ import schemas
 from database import engine, get_db
 from config import get_settings
 import logging
+import sys
+import os
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
+# Configurar logging extensivo
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 logger = logging.getLogger(__name__)
+
+logger.info("=== INICIANDO APLICACIÓN BOTILLERÍA ===")
+logger.info(f"Python version: {sys.version}")
+logger.info(f"Working directory: {os.getcwd()}")
+logger.info(f"PORT env var: {os.getenv('PORT', 'NOT_SET')}")
 
 # Crear tablas de forma más robusta
 try:
+    logger.info("Intentando crear tablas de base de datos...")
     models.Base.metadata.create_all(bind=engine)
-    logger.info("Database tables created successfully")
+    logger.info("✅ Database tables created successfully")
     
     # Inicializar datos básicos en producción
     from sqlalchemy.orm import sessionmaker
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db = SessionLocal()
     try:
+        logger.info("Verificando si existen productos en la BD...")
         # Verificar si hay productos
         producto_count = db.query(models.Producto).count()
+        logger.info(f"Productos encontrados: {producto_count}")
+        
         if producto_count == 0:
             logger.info("No products found, creating sample data...")
             # Crear algunos productos básicos
@@ -39,52 +56,79 @@ try:
                 db.add(producto)
             
             db.commit()
-            logger.info("Sample data created successfully")
+            logger.info("✅ Sample data created successfully")
+        else:
+            logger.info("✅ Products already exist in database")
     except Exception as init_error:
-        logger.error(f"Error initializing data: {init_error}")
+        logger.error(f"❌ Error initializing data: {init_error}")
+        logger.exception("Full stacktrace:")
         db.rollback()
     finally:
         db.close()
         
 except Exception as e:
-    logger.error(f"Error creating database tables: {e}")
+    logger.error(f"❌ Error creating database tables: {e}")
+    logger.exception("Full stacktrace:")
     # Continuar con la aplicación incluso si hay problemas con las tablas
 
 # Inicializar FastAPI
+logger.info("Inicializando FastAPI...")
 settings = get_settings()
 app = FastAPI(title=settings.app_name)
+logger.info(f"✅ FastAPI initialized with title: {settings.app_name}")
 
 # Montar archivos estáticos
-app.mount("/static", StaticFiles(directory="static"), name="static")
+logger.info("Montando archivos estáticos...")
+try:
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+    logger.info("✅ Static files mounted successfully")
+except Exception as static_error:
+    logger.error(f"❌ Error mounting static files: {static_error}")
+    logger.exception("Full stacktrace:")
+
+logger.info("=== CONFIGURANDO ENDPOINTS ===")
 
 # ============== HEALTH CHECK ==============
 
 @app.get("/test")
 def test_endpoint():
     """Endpoint simple para verificar que la app funciona"""
+    logger.info("Test endpoint called")
     return {
         "message": "¡Botillería funcionando correctamente!",
         "status": "success",
-        "timestamp": "2026-01-02"
+        "timestamp": "2026-01-02",
+        "port": os.getenv("PORT", "NOT_SET")
     }
 
 @app.get("/health")
 def health_check():
     """Health check endpoint for Railway"""
+    logger.info("Health check endpoint called")
     try:
         # Verificar conexión a la base de datos
         db = next(get_db())
         db.execute("SELECT 1")
         db.close()
+        logger.info("✅ Health check passed - database connected")
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
-        logger.error(f"Health check failed: {e}")
+        logger.error(f"❌ Health check failed: {e}")
+        logger.exception("Health check exception:")
         return {"status": "unhealthy", "error": str(e)}
 
 @app.get("/")
 def root():
     """Servir la página principal"""
-    return FileResponse("static/index.html")
+    logger.info("Root endpoint called")
+    try:
+        return FileResponse("static/index.html")
+    except Exception as e:
+        logger.error(f"❌ Error serving index.html: {e}")
+        logger.exception("Root endpoint exception:")
+        raise HTTPException(status_code=500, detail=f"Error serving page: {e}")
+
+logger.info("✅ Main endpoints configured")
 
 # ============== RUTAS DE PRODUCTOS ==============
 
@@ -367,9 +411,19 @@ def obtener_retiro(retiro_id: int, db: Session = Depends(get_db)):
 # ============== RUTAS FRONTEND ==============
 
 if __name__ == "__main__":
+    logger.info("=== INICIANDO SERVIDOR UVICORN ===")
     import uvicorn
     import os
     # Usar puerto 8000 que es el configurado en Railway
     port = int(os.getenv("PORT", 8000))
-    print(f"Starting server on port {port}")
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False, log_level="info")
+    logger.info(f"🚀 Starting server on port {port}")
+    logger.info(f"Host: 0.0.0.0")
+    logger.info(f"App: main:app")
+    logger.info("=== UVICORN START ===")
+    
+    try:
+        uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False, log_level="info")
+    except Exception as server_error:
+        logger.error(f"❌ Server failed to start: {server_error}")
+        logger.exception("Server startup exception:")
+        raise
