@@ -7,9 +7,48 @@ import models
 import schemas
 from database import engine, get_db
 from config import get_settings
+import logging
 
-# Crear tablas
-models.Base.metadata.create_all(bind=engine)
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Crear tablas de forma más robusta
+try:
+    models.Base.metadata.create_all(bind=engine)
+    logger.info("Database tables created successfully")
+    
+    # Inicializar datos básicos en producción
+    from sqlalchemy.orm import sessionmaker
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    db = SessionLocal()
+    try:
+        # Verificar si hay productos
+        producto_count = db.query(models.Producto).count()
+        if producto_count == 0:
+            logger.info("No products found, creating sample data...")
+            # Crear algunos productos básicos
+            productos_basicos = [
+                {"codigo": "PISCO001", "nombre": "Pisco Alto del Carmen 35°", "precio": 6990, "stock": 12, "categoria": "Pisco", "marca": "Alto del Carmen", "litros": 1.0},
+                {"codigo": "VODKA001", "nombre": "Vodka Absolut", "precio": 14990, "stock": 8, "categoria": "Vodka", "marca": "Absolut", "litros": 1.0},
+                {"codigo": "RON001", "nombre": "Ron Bacardi Blanco", "precio": 8990, "stock": 10, "categoria": "Ron", "marca": "Bacardi", "litros": 1.0}
+            ]
+            
+            for producto_data in productos_basicos:
+                producto = models.Producto(**producto_data)
+                db.add(producto)
+            
+            db.commit()
+            logger.info("Sample data created successfully")
+    except Exception as init_error:
+        logger.error(f"Error initializing data: {init_error}")
+        db.rollback()
+    finally:
+        db.close()
+        
+except Exception as e:
+    logger.error(f"Error creating database tables: {e}")
+    # Continuar con la aplicación incluso si hay problemas con las tablas
 
 # Inicializar FastAPI
 settings = get_settings()
@@ -17,6 +56,26 @@ app = FastAPI(title=settings.app_name)
 
 # Montar archivos estáticos
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# ============== HEALTH CHECK ==============
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for Railway"""
+    try:
+        # Verificar conexión a la base de datos
+        db = next(get_db())
+        db.execute("SELECT 1")
+        db.close()
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {"status": "unhealthy", "error": str(e)}
+
+@app.get("/")
+def root():
+    """Servir la página principal"""
+    return FileResponse("static/index.html")
 
 # ============== RUTAS DE PRODUCTOS ==============
 
@@ -292,21 +351,7 @@ def listar_retiros(
 def obtener_retiro(retiro_id: int, db: Session = Depends(get_db)):
     """Obtener detalles de un retiro"""
     retiro = db.query(models.Retiro).filter(models.Retiro.id == retiro_id).first()
-    if not retiro:
-        raise HTTPException(status_code=404, detail="Retiro no encontrado")
-    return retiro
-
 # ============== RUTAS FRONTEND ==============
-
-@app.get("/")
-def root():
-    """Página principal"""
-    return FileResponse("static/index.html")
-
-@app.get("/health")
-def health_check():
-    """Health check para Railway"""
-    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn
