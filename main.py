@@ -360,6 +360,10 @@ def listar_retiros(
 def obtener_retiro(retiro_id: int, db: Session = Depends(get_db)):
     """Obtener detalles de un retiro"""
     retiro = db.query(models.Retiro).filter(models.Retiro.id == retiro_id).first()
+    if not retiro:
+        raise HTTPException(status_code=404, detail="Retiro no encontrado")
+    return retiro
+
 # ============== RUTAS FRONTEND ==============
 
 if __name__ == "__main__":
