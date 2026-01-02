@@ -68,6 +68,42 @@ function setupEventListeners() {
     document.getElementById('btnNuevoProducto').addEventListener('click', showProductForm);
     document.getElementById('productoForm').addEventListener('submit', handleProductSubmit);
     document.getElementById('cancelForm').addEventListener('click', hideProductForm);
+    
+    // Nuevos elementos del diseño mejorado
+    const closeSidebar = document.getElementById('closeSidebar');
+    if (closeSidebar) {
+        closeSidebar.addEventListener('click', hideProductForm);
+    }
+    
+    // Búsqueda mejorada de productos
+    const productSearch = document.getElementById('productSearchInput');
+    if (productSearch) {
+        productSearch.addEventListener('input', (e) => {
+            // Implementar búsqueda en tiempo real si es necesario
+            console.log('Buscando:', e.target.value);
+        });
+    }
+    
+    // Filtros de categoría
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('filter-pill')) {
+            // Actualizar filtros activos
+            document.querySelectorAll('.filter-pill').forEach(pill => pill.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            const category = e.target.dataset.category;
+            console.log('Filtrar por categoría:', category);
+            // Aquí puedes implementar la lógica de filtrado
+        }
+    });
+    
+    // Botón de exportar
+    const exportBtn = document.getElementById('exportData');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            alert('Funcionalidad de exportación próximamente');
+        });
+    }
 
     // Stock form
     document.getElementById('addStockForm').addEventListener('submit', handleAddStock);
@@ -531,10 +567,29 @@ async function loadProductsTable() {
     try {
         const response = await fetch(`${API_URL}/productos?limit=500`);
         const productos = await response.json();
-        renderProductsTable(productos.filter(p => p.activo));
+        const productosActivos = productos.filter(p => p.activo);
+        renderProductsTable(productosActivos);
+        updateProductStats(productosActivos);
     } catch (error) {
         console.error('Error:', error);
     }
+}
+
+function updateProductStats(productos) {
+    if (!productos) return;
+    
+    const totalProductos = productos.length;
+    const stockBajo = productos.filter(p => p.stock <= p.stock_minimo).length;
+    const valorTotal = productos.reduce((sum, p) => sum + (p.precio_venta * p.stock), 0);
+    
+    // Actualizar estadísticas en el sidebar
+    const totalEl = document.querySelector('.quick-stats .stat-card:nth-child(1) .stat-value');
+    const stockEl = document.querySelector('.quick-stats .stat-card:nth-child(2) .stat-value');
+    const valorEl = document.querySelector('.quick-stats .stat-card:nth-child(3) .stat-value');
+    
+    if (totalEl) totalEl.textContent = totalProductos;
+    if (stockEl) stockEl.textContent = stockBajo;
+    if (valorEl) valorEl.textContent = `$${formatPrice(valorTotal)}`;
 }
 
 function renderProductsTable(productos) {
@@ -548,7 +603,11 @@ function renderProductsTable(productos) {
     tbody.innerHTML = productos.map(p => `
         <tr>
             <td><strong>${p.codigo}</strong></td>
-            <td>${p.nombre}</td>
+            <td>
+                ${p.imagen_url ? `<img src="${p.imagen_url}" alt="${p.nombre}" class="product-thumb">` : '📦'}
+                <strong>${p.nombre}</strong>
+                ${p.descripcion ? `<br><small>${p.descripcion}</small>` : ''}
+            </td>
             <td>${p.categoria || '-'}</td>
             <td><strong>$${formatPrice(p.precio_venta)}</strong></td>
             <td>
@@ -559,23 +618,60 @@ function renderProductsTable(productos) {
             <td>
                 <button class="btn-icon edit" onclick="editProduct(${p.id})" title="Editar">✏️</button>
                 <button class="btn-icon delete" onclick="deleteProduct(${p.id})" title="Eliminar">🗑️</button>
+                <button class="btn-icon" onclick="showStockModal(${p.id})" title="Agregar Stock">📦</button>
             </td>
         </tr>
     `).join('');
 }
 
-function showProductForm() {
-    document.getElementById('productForm').style.display = 'block';
-    document.getElementById('formTitle').textContent = 'Nuevo Producto';
-    document.getElementById('codigo').focus();
+// Función de filtrado de productos mejorada
+function filterProducts() {
+    const searchTerm = document.getElementById('productSearchInput')?.value.toLowerCase() || '';
+    const selectedCategory = state.selectedFilter || '';
+    
+    let filteredProducts = state.products.filter(producto => {
+        const matchesSearch = !searchTerm || 
+            producto.nombre.toLowerCase().includes(searchTerm) ||
+            producto.codigo.toLowerCase().includes(searchTerm) ||
+            (producto.descripcion && producto.descripcion.toLowerCase().includes(searchTerm));
+        
+        const matchesCategory = !selectedCategory || 
+            selectedCategory === 'todos' || 
+            producto.categoria === selectedCategory;
+        
+        return matchesSearch && matchesCategory && producto.activo;
+    });
+    
+    renderProductsTable(filteredProducts);
+    updateProductStats(filteredProducts);
 }
 
-function hideProductForm() {
-    document.getElementById('productForm').style.display = 'none';
+function showProductForm() {
+    // En el nuevo diseño, el formulario siempre está visible en el sidebar
+    // Solo necesitamos scroll al sidebar y limpiar el formulario
+    document.getElementById('formTitle').textContent = '➕ Nuevo Producto';
     document.getElementById('productoForm').reset();
     document.getElementById('codigo').readOnly = false;
     state.editingProductId = null;
-    document.getElementById('quickScanInput').focus();
+    document.getElementById('codigo').focus();
+    
+    // Scroll al formulario si es mobile
+    if (window.innerWidth <= 968) {
+        document.querySelector('.productos-sidebar').scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+function hideProductForm() {
+    // En el nuevo diseño no ocultamos el formulario, solo lo limpiamos
+    document.getElementById('productoForm').reset();
+    document.getElementById('codigo').readOnly = false;
+    state.editingProductId = null;
+    
+    // Focus en búsqueda si existe
+    const searchInput = document.getElementById('productSearchInput');
+    if (searchInput) {
+        searchInput.focus();
+    }
 }
 
 async function handleProductSubmit(e) {

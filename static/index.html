@@ -147,123 +147,211 @@
 
     <!-- Vista: Productos -->
     <div id="view-productos" class="view">
-        <div class="content-container">
-            <div class="content-header">
-                <h2>📦 Gestión de Productos</h2>
-                <button id="btnNuevoProducto" class="btn-primary">+ Nuevo Producto</button>
-            </div>
-
-            <!-- Búsqueda rápida con pistola -->
-            <div class="quick-scan-card">
-                <h3>🔫 Escanear Código de Barras</h3>
-                <div class="scan-input-group">
-                    <input 
-                        type="text" 
-                        id="quickScanInput" 
-                        placeholder="Escanea o escribe el código del producto..."
-                        autocomplete="off"
-                        autofocus
-                    >
-                    <button id="quickScanBtn" class="btn-primary">Buscar</button>
+        <div class="productos-layout">
+            <!-- Panel Principal - Lista de Productos -->
+            <div class="productos-main">
+                <div class="productos-header">
+                    <div class="header-info">
+                        <h2>📦 Gestión de Productos</h2>
+                        <p class="header-subtitle">Administra tu inventario de manera eficiente</p>
+                    </div>
+                    <div class="header-actions">
+                        <button id="btnNuevoProducto" class="btn-primary">
+                            <span class="icon">➕</span>
+                            Nuevo Producto
+                        </button>
+                        <button id="exportData" class="btn-secondary">
+                            <span class="icon">📊</span>
+                            Exportar
+                        </button>
+                    </div>
                 </div>
-                <p class="scan-hint">💡 Escanea el código o presiona ENTER para buscar</p>
+
+                <!-- Búsqueda y Filtros -->
+                <div class="productos-search">
+                    <div class="search-group">
+                        <div class="search-input-wrapper">
+                            <span class="search-icon">🔍</span>
+                            <input 
+                                type="text" 
+                                id="productSearchInput" 
+                                placeholder="Buscar productos por código, nombre o categoría..."
+                                autocomplete="off"
+                            >
+                        </div>
+                        <button id="quickScanBtn" class="btn-scan">
+                            <span class="icon">🔫</span>
+                            Scanner
+                        </button>
+                    </div>
+                    <div class="filter-pills">
+                        <button class="filter-pill active" data-category="">Todos</button>
+                        <button class="filter-pill" data-category="Cervezas">Cervezas</button>
+                        <button class="filter-pill" data-category="Vinos">Vinos</button>
+                        <button class="filter-pill" data-category="Licores">Licores</button>
+                        <button class="filter-pill" data-category="Bebidas">Bebidas</button>
+                        <button class="filter-pill" data-category="Snacks">Snacks</button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Productos Mejorada -->
+                <div class="table-container">
+                    <div class="table-content">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-code">Código</th>
+                                    <th class="col-name">Producto</th>
+                                    <th class="col-category">Categoría</th>
+                                    <th class="col-price">Precio</th>
+                                    <th class="col-stock">Stock</th>
+                                    <th class="col-status">Estado</th>
+                                    <th class="col-actions">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productosTable"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
-            <!-- Formulario de producto -->
-            <div id="productForm" class="form-card" style="display: none;">
-                <h3 id="formTitle">Nuevo Producto</h3>
-                <form id="productoForm">
-                    <input type="hidden" id="productId">
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Código *</label>
-                            <input type="text" id="codigo" required>
+            <!-- Panel Lateral - Formulario -->
+            <div class="productos-sidebar">
+                <div class="sidebar-content">
+                    <!-- Formulario de Producto -->
+                    <div id="productForm" class="product-form">
+                        <div class="form-header">
+                            <h3 id="formTitle">➕ Nuevo Producto</h3>
+                            <button id="closeSidebar" class="btn-close">✕</button>
                         </div>
-                        <div class="form-group">
-                            <label>Categoría</label>
-                            <select id="categoria">
-                                <option value="">Sin categoría</option>
-                                <option value="Cervezas">Cervezas</option>
-                                <option value="Vinos">Vinos</option>
-                                <option value="Licores">Licores</option>
-                                <option value="Bebidas">Bebidas</option>
-                                <option value="Snacks">Snacks</option>
-                                <option value="Otros">Otros</option>
-                            </select>
-                        </div>
+
+                        <form id="productoForm" class="form-content">
+                            <input type="hidden" id="productId">
+                            
+                            <div class="form-section">
+                                <h4>📋 Información Básica</h4>
+                                
+                                <div class="form-group">
+                                    <label>Código del Producto *</label>
+                                    <input type="text" id="codigo" placeholder="EAN, SKU o código interno" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Nombre del Producto *</label>
+                                    <input type="text" id="nombre" placeholder="Nombre descriptivo del producto" required>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Categoría</label>
+                                        <select id="categoria">
+                                            <option value="">Seleccionar...</option>
+                                            <option value="Cervezas">🍺 Cervezas</option>
+                                            <option value="Vinos">🍷 Vinos</option>
+                                            <option value="Licores">🥃 Licores</option>
+                                            <option value="Bebidas">🥤 Bebidas</option>
+                                            <option value="Snacks">🍿 Snacks</option>
+                                            <option value="Otros">📦 Otros</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Marca</label>
+                                        <input type="text" id="marca" placeholder="Ej: Cristal, Santa Rita">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Volumen (Litros)</label>
+                                        <input type="number" id="litros" step="0.01" min="0" placeholder="0.33">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>URL Imagen</label>
+                                        <input type="url" id="imagen_url" placeholder="https://...">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h4>💰 Precios</h4>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Precio Compra *</label>
+                                        <div class="input-with-currency">
+                                            <span class="currency">$</span>
+                                            <input type="number" id="precioCompra" step="1" min="0" placeholder="0" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Precio Venta *</label>
+                                        <div class="input-with-currency">
+                                            <span class="currency">$</span>
+                                            <input type="number" id="precioVenta" step="1" min="0" placeholder="0" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="profit-display">
+                                    <span class="profit-label">Margen de ganancia:</span>
+                                    <span id="profitMargin" class="profit-value">0%</span>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h4>📦 Inventario</h4>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Stock Actual</label>
+                                        <input type="number" id="stock" min="0" value="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Stock Mínimo</label>
+                                        <input type="number" id="stockMinimo" min="0" value="5">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Descripción (Opcional)</label>
+                                    <textarea id="descripcion" rows="3" placeholder="Información adicional del producto..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary btn-large">
+                                    <span class="icon">💾</span>
+                                    Guardar Producto
+                                </button>
+                                <button type="button" id="cancelForm" class="btn-secondary btn-large">
+                                    <span class="icon">🚫</span>
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
                     </div>
 
-                    <div class="form-group">
-                        <label>Nombre del Producto *</label>
-                        <input type="text" id="nombre" required>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Marca</label>
-                            <input type="text" id="marca" placeholder="Ej: Cristal, Concha y Toro">
-                        </div>
-                        <div class="form-group">
-                            <label>Volumen (Litros)</label>
-                            <input type="number" id="litros" step="0.01" min="0" placeholder="Ej: 0.33, 1, 1.5">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>URL de Imagen</label>
-                        <input type="url" id="imagen_url" placeholder="https://ejemplo.com/imagen.jpg">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Descripción</label>
-                        <textarea id="descripcion" rows="2"></textarea>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Precio Compra *</label>
-                            <input type="number" id="precioCompra" step="1" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Precio Venta *</label>
-                            <input type="number" id="precioVenta" step="1" min="0" required>
+                    <!-- Quick Stats -->
+                    <div class="sidebar-stats">
+                        <h4>📊 Resumen Rápido</h4>
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <span class="stat-icon">📦</span>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="totalProducts">0</span>
+                                    <span class="stat-label">Productos</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-icon">⚠️</span>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="lowStock">0</span>
+                                    <span class="stat-label">Stock Bajo</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Stock Actual</label>
-                            <input type="number" id="stock" min="0" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label>Stock Mínimo</label>
-                            <input type="number" id="stockMinimo" min="0" value="5">
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Guardar</button>
-                        <button type="button" id="cancelForm" class="btn-secondary">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Tabla de productos -->
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Nombre</th>
-                            <th>Categoría</th>
-                            <th>Precio</th>
-                            <th>Stock</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productosTable"></tbody>
-                </table>
+                </div>
             </div>
         </div>
     </div>

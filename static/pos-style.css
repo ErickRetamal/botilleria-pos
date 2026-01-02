@@ -10,6 +10,11 @@
     --border: #e5e7eb;
     --text: #374151;
     --text-light: #6b7280;
+    --radius: 8px;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -887,6 +892,17 @@ body {
 .btn-icon.delete:hover {
     background: #fee2e2;
     color: var(--danger);
+}
+
+/* Product thumbnails en tablas */
+.product-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius);
+    object-fit: cover;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    border: 2px solid var(--gray-200);
 }
 
 /* ========== MODAL ========== */
