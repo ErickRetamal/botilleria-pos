@@ -365,7 +365,7 @@ def obtener_retiro(retiro_id: int, db: Session = Depends(get_db)):
 if __name__ == "__main__":
     import uvicorn
     import os
-    # Railway usa puerto 8080, asegurar que lo usemos
-    port = int(os.getenv("PORT", 8080))
+    # Usar puerto 8000 que es el configurado en Railway
+    port = int(os.getenv("PORT", 8000))
     print(f"Starting server on port {port}")
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False, log_level="info")
