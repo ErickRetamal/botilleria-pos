@@ -414,8 +414,8 @@ if __name__ == "__main__":
     logger.info("=== INICIANDO SERVIDOR UVICORN ===")
     import uvicorn
     import os
-    # Usar puerto 8000 que es el configurado en Railway
-    port = int(os.getenv("PORT", 8000))
+    # Usar el puerto que Railway asigna dinámicamente (8080 según logs)
+    port = int(os.getenv("PORT", 8080))
     logger.info(f"🚀 Starting server on port {port}")
     logger.info(f"Host: 0.0.0.0")
     logger.info(f"App: main:app")
