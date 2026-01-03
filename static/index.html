@@ -62,40 +62,34 @@
                     >
                 </div>
 
-                <!-- Filtros por categoría -->
-                <div class="filter-section">
-                    <div class="filter-group">
-                        <label class="filter-label">🏷️ Categoría:</label>
-                        <div class="category-filters">
-                            <button class="category-btn active" data-categoria="">Todos</button>
-                            <button class="category-btn" data-categoria="Cervezas">Cervezas</button>
-                            <button class="category-btn" data-categoria="Vinos">Vinos</button>
-                            <button class="category-btn" data-categoria="Licores">Licores</button>
-                            <button class="category-btn" data-categoria="Bebidas">Bebidas</button>
-                            <button class="category-btn" data-categoria="Snacks">Snacks</button>
+                <!-- Filtros compactos -->
+                <div class="pos-filters">
+                    <div class="filter-row">
+                        <!-- Filtros de categoría como pills -->
+                        <div class="category-pills">
+                            <button class="pill active" data-categoria="">🌟 Todos</button>
+                            <button class="pill" data-categoria="Cervezas">🍺</button>
+                            <button class="pill" data-categoria="Vinos">🍷</button>
+                            <button class="pill" data-categoria="Licores">🥃</button>
+                            <button class="pill" data-categoria="Bebidas">🥤</button>
+                            <button class="pill" data-categoria="Snacks">🍿</button>
                         </div>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">💧 Volumen:</label>
-                        <select id="litrosFilter" class="filter-select">
-                            <option value="">Todos los volúmenes</option>
-                            <option value="0.33">330ml</option>
-                            <option value="0.35">350ml</option>
-                            <option value="0.5">500ml</option>
-                            <option value="0.75">750ml</option>
-                            <option value="1">1 Litro</option>
-                            <option value="1.5">1.5 Litros</option>
-                            <option value="2">2 Litros</option>
-                            <option value="3">3 Litros</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">🏭 Marca:</label>
-                        <select id="marcaFilter" class="filter-select">
-                            <option value="">Todas las marcas</option>
-                        </select>
+                        
+                        <!-- Filtros adicionales en selects compactos -->
+                        <div class="filter-selects">
+                            <select id="litrosFilter" class="compact-select">
+                                <option value="">💧 Volumen</option>
+                                <option value="0.33">330ml</option>
+                                <option value="0.5">500ml</option>
+                                <option value="0.75">750ml</option>
+                                <option value="1">1L</option>
+                                <option value="1.5">1.5L</option>
+                                <option value="2">2L</option>
+                            </select>
+                            <select id="marcaFilter" class="compact-select">
+                                <option value="">🏭 Marca</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 

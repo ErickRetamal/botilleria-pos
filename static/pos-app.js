@@ -28,10 +28,15 @@ function setupEventListeners() {
     });
 
     // POS - Búsqueda y filtros
-    document.getElementById('posSearchInput').addEventListener('input', debounce(filterProducts, 300));
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => filterByCategory(btn.dataset.categoria));
+    document.getElementById('posSearchInput').addEventListener('input', debounce(filterPOSProducts, 300));
+    
+    // Event delegation para los pills de categoría
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('pill') && e.target.dataset.categoria !== undefined) {
+            filterByCategory(e.target.dataset.categoria);
+        }
     });
+    
     document.getElementById('litrosFilter').addEventListener('change', (e) => {
         state.selectedLitros = e.target.value;
         renderPOSProducts();
@@ -207,16 +212,21 @@ function switchView(viewName) {
 }
 
 // ============== POS - PRODUCTOS ==============
-function filterProducts() {
+function filterPOSProducts() {
     const searchTerm = document.getElementById('posSearchInput').value.toLowerCase();
     renderPOSProducts(searchTerm);
+}
+
+// Función legacy para compatibilidad
+function filterProducts() {
+    filterPOSProducts();
 }
 
 function filterByCategory(categoria) {
     state.selectedCategory = categoria;
     
-    // Actualizar botones
-    document.querySelectorAll('.category-btn').forEach(btn => {
+    // Actualizar pills
+    document.querySelectorAll('.pill[data-categoria]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.categoria === categoria);
     });
     
@@ -629,7 +639,7 @@ function filterProducts() {
     const searchTerm = document.getElementById('productSearchInput')?.value.toLowerCase() || '';
     const selectedCategory = state.selectedFilter || '';
     
-    let filteredProducts = state.products.filter(producto => {
+    let filteredProducts = state.productos.filter(producto => {
         const matchesSearch = !searchTerm || 
             producto.nombre.toLowerCase().includes(searchTerm) ||
             producto.codigo.toLowerCase().includes(searchTerm) ||
