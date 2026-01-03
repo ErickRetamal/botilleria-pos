@@ -1413,3 +1413,600 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
+
+// ============== REPORTES MODULE ==============
+let reportesData = {
+    ventas: [],
+    filtros: {
+        periodo: 'hoy',
+        fechaDesde: '',
+        fechaHasta: '',
+        metodo: ''
+    }
+};
+
+function initReportesModule() {
+    console.log('🚀 Inicializando módulo de reportes...');
+    
+    // Event listeners para tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchReportTab(btn.dataset.tab));
+    });
+    
+    // Event listeners para filtros
+    const periodoFilter = document.getElementById('periodoFilter');
+    if (periodoFilter) {
+        periodoFilter.addEventListener('change', handlePeriodoChange);
+    }
+    
+    const aplicarFiltros = document.getElementById('aplicarFiltros');
+    if (aplicarFiltros) {
+        aplicarFiltros.addEventListener('click', aplicarFiltrosReporte);
+    }
+    
+    const limpiarFiltros = document.getElementById('limpiarFiltros');
+    if (limpiarFiltros) {
+        limpiarFiltros.addEventListener('click', limpiarFiltrosReporte);
+    }
+    
+    // Cargar datos iniciales
+    loadReportesData();
+    updateReportesStats();
+    renderReportTabs();
+}
+
+function switchReportTab(tabName) {
+    // Actualizar botones
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    
+    // Actualizar contenido
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === `tab-${tabName}`);
+    });
+    
+    // Cargar contenido específico del tab
+    switch(tabName) {
+        case 'ventas':
+            renderVentasTable();
+            break;
+        case 'productos':
+            renderProductosRanking();
+            break;
+        case 'inventario':
+            renderInventarioAlerts();
+            break;
+        case 'graficos':
+            renderGraficos();
+            break;
+    }
+}
+
+function handlePeriodoChange() {
+    const periodo = document.getElementById('periodoFilter').value;
+    const fechasDiv = document.getElementById('fechasPersonalizadas');
+    
+    if (periodo === 'personalizado') {
+        fechasDiv.style.display = 'flex';
+        fechasDiv.style.gap = '1rem';
+        fechasDiv.style.alignItems = 'center';
+    } else {
+        fechasDiv.style.display = 'none';
+    }
+    
+    reportesData.filtros.periodo = periodo;
+    actualizarFechasPorPeriodo();
+}
+
+function actualizarFechasPorPeriodo() {
+    const hoy = new Date();
+    const periodo = reportesData.filtros.periodo;
+    
+    switch(periodo) {
+        case 'hoy':
+            reportesData.filtros.fechaDesde = hoy.toISOString().split('T')[0];
+            reportesData.filtros.fechaHasta = hoy.toISOString().split('T')[0];
+            break;
+        case 'ayer':
+            const ayer = new Date(hoy);
+            ayer.setDate(ayer.getDate() - 1);
+            reportesData.filtros.fechaDesde = ayer.toISOString().split('T')[0];
+            reportesData.filtros.fechaHasta = ayer.toISOString().split('T')[0];
+            break;
+        case 'semana':
+            const inicioSemana = new Date(hoy);
+            inicioSemana.setDate(hoy.getDate() - hoy.getDay());
+            reportesData.filtros.fechaDesde = inicioSemana.toISOString().split('T')[0];
+            reportesData.filtros.fechaHasta = hoy.toISOString().split('T')[0];
+            break;
+        case 'mes':
+            const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            reportesData.filtros.fechaDesde = inicioMes.toISOString().split('T')[0];
+            reportesData.filtros.fechaHasta = hoy.toISOString().split('T')[0];
+            break;
+    }
+}
+
+function aplicarFiltrosReporte() {
+    const metodo = document.getElementById('metodoFilter').value;
+    reportesData.filtros.metodo = metodo;
+    
+    if (reportesData.filtros.periodo === 'personalizado') {
+        reportesData.filtros.fechaDesde = document.getElementById('fechaDesde').value;
+        reportesData.filtros.fechaHasta = document.getElementById('fechaHasta').value;
+    }
+    
+    loadReportesData();
+    updateReportesStats();
+    renderReportTabs();
+    
+    console.log('🔍 Filtros aplicados:', reportesData.filtros);
+}
+
+function limpiarFiltrosReporte() {
+    document.getElementById('periodoFilter').value = 'hoy';
+    document.getElementById('metodoFilter').value = '';
+    document.getElementById('fechaDesde').value = '';
+    document.getElementById('fechaHasta').value = '';
+    document.getElementById('fechasPersonalizadas').style.display = 'none';
+    
+    reportesData.filtros = {
+        periodo: 'hoy',
+        fechaDesde: '',
+        fechaHasta: '',
+        metodo: ''
+    };
+    
+    actualizarFechasPorPeriodo();
+    aplicarFiltrosReporte();
+}
+
+function loadReportesData() {
+    // Generar datos de prueba para ventas
+    const ventasEjemplo = [
+        {
+            id: 'V001',
+            fecha: new Date().toISOString(),
+            total: 15000,
+            metodo: 'efectivo',
+            productos: [
+                {nombre: 'Cerveza Cristal 350ml', cantidad: 6, precio: 1200},
+                {nombre: 'Pisco Capel 35°', cantidad: 1, precio: 6500},
+                {nombre: 'Papas Lays Original', cantidad: 2, precio: 1300}
+            ]
+        },
+        {
+            id: 'V002',
+            fecha: new Date(Date.now() - 3600000).toISOString(), // 1 hora atrás
+            total: 8500,
+            metodo: 'tarjeta',
+            productos: [
+                {nombre: 'Vino Casillero del Diablo', cantidad: 1, precio: 5500},
+                {nombre: 'Coca Cola 500ml', cantidad: 3, precio: 1000}
+            ]
+        },
+        {
+            id: 'V003',
+            fecha: new Date(Date.now() - 7200000).toISOString(), // 2 horas atrás
+            total: 12400,
+            metodo: 'transferencia',
+            productos: [
+                {nombre: 'Cerveza Cristal 350ml', cantidad: 4, precio: 1200},
+                {nombre: 'Vino Casillero del Diablo', cantidad: 1, precio: 5500},
+                {nombre: 'Coca Cola 500ml', cantidad: 2, precio: 1000},
+                {nombre: 'Papas Lays Original', cantidad: 1, precio: 1300}
+            ]
+        }
+    ];
+    
+    // Filtrar según los filtros activos
+    reportesData.ventas = ventasEjemplo.filter(venta => {
+        const fechaVenta = new Date(venta.fecha).toISOString().split('T')[0];
+        const enRangoFecha = (!reportesData.filtros.fechaDesde || fechaVenta >= reportesData.filtros.fechaDesde) &&
+                            (!reportesData.filtros.fechaHasta || fechaVenta <= reportesData.filtros.fechaHasta);
+        const coincideMetodo = !reportesData.filtros.metodo || venta.metodo === reportesData.filtros.metodo;
+        
+        return enRangoFecha && coincideMetodo;
+    });
+    
+    console.log(`📊 Cargadas ${reportesData.ventas.length} ventas con filtros aplicados`);
+}
+
+function updateReportesStats() {
+    const ventas = reportesData.ventas;
+    
+    // Calcular estadísticas
+    const totalVentas = ventas.reduce((sum, v) => sum + v.total, 0);
+    const totalTransacciones = ventas.length;
+    const ticketPromedio = totalTransacciones > 0 ? totalVentas / totalTransacciones : 0;
+    
+    const productosVendidos = ventas.reduce((total, venta) => {
+        return total + venta.productos.reduce((sum, p) => sum + p.cantidad, 0);
+    }, 0);
+    
+    // Calcular ganancia (asumiendo 30% de margen promedio)
+    const gananciaEstimada = totalVentas * 0.3;
+    const margen = totalVentas > 0 ? ((gananciaEstimada / totalVentas) * 100).toFixed(1) : 0;
+    
+    // Actualizar elementos
+    const ventasDiaEl = document.getElementById('ventasDiaReporte');
+    if (ventasDiaEl) ventasDiaEl.textContent = `$${formatPrice(totalVentas)}`;
+    
+    const gananciaBrutaEl = document.getElementById('gananciaBruta');
+    if (gananciaBrutaEl) gananciaBrutaEl.textContent = `$${formatPrice(gananciaEstimada)}`;
+    
+    const margenEl = document.getElementById('margenGanancia');
+    if (margenEl) margenEl.textContent = `${margen}%`;
+    
+    const productosVendidosEl = document.getElementById('productosVendidos');
+    if (productosVendidosEl) productosVendidosEl.textContent = productosVendidos;
+    
+    const totalTransaccionesEl = document.getElementById('totalTransacciones');
+    if (totalTransaccionesEl) totalTransaccionesEl.textContent = totalTransacciones;
+    
+    const ticketPromedioEl = document.getElementById('ticketPromedio');
+    if (ticketPromedioEl) ticketPromedioEl.textContent = `$${formatPrice(ticketPromedio)}`;
+    
+    const ultimaActualizacionEl = document.getElementById('ultimaActualizacion');
+    if (ultimaActualizacionEl) {
+        ultimaActualizacionEl.textContent = new Date().toLocaleTimeString('es-CL');
+    }
+}
+
+function renderReportTabs() {
+    // Renderizar el tab activo
+    const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'ventas';
+    switchReportTab(activeTab);
+}
+
+function renderVentasTable() {
+    const tbody = document.getElementById('ventasTable');
+    if (!tbody) return;
+    
+    if (reportesData.ventas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No hay ventas en el período seleccionado</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = reportesData.ventas.map(venta => {
+        const fecha = new Date(venta.fecha);
+        const fechaFormateada = fecha.toLocaleDateString('es-CL');
+        const horaFormateada = fecha.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+        
+        return `
+            <tr>
+                <td><strong>${venta.id}</strong></td>
+                <td>
+                    📅 ${fechaFormateada}<br>
+                    🕐 ${horaFormateada}
+                </td>
+                <td><strong>$${formatPrice(venta.total)}</strong></td>
+                <td>
+                    <span class="badge ${getMetodoBadgeClass(venta.metodo)}">
+                        ${getMetodoIcon(venta.metodo)} ${capitalize(venta.metodo)}
+                    </span>
+                </td>
+                <td>${venta.productos.length} item${venta.productos.length !== 1 ? 's' : ''}</td>
+                <td>
+                    <button class="btn-icon" onclick="showVentaDetail('${venta.id}')" title="Ver detalle">👁️</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderProductosRanking() {
+    const container = document.getElementById('productosRanking');
+    if (!container) return;
+    
+    // Consolidar productos vendidos
+    const productosMap = new Map();
+    
+    reportesData.ventas.forEach(venta => {
+        venta.productos.forEach(producto => {
+            const key = producto.nombre;
+            if (productosMap.has(key)) {
+                const existing = productosMap.get(key);
+                existing.cantidad += producto.cantidad;
+                existing.revenue += producto.cantidad * producto.precio;
+            } else {
+                productosMap.set(key, {
+                    nombre: producto.nombre,
+                    cantidad: producto.cantidad,
+                    precio: producto.precio,
+                    revenue: producto.cantidad * producto.precio
+                });
+            }
+        });
+    });
+    
+    // Convertir a array y ordenar por cantidad vendida
+    const productos = Array.from(productosMap.values())
+        .sort((a, b) => b.cantidad - a.cantidad)
+        .slice(0, 10); // Top 10
+    
+    if (productos.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay datos de productos en el período seleccionado</div>';
+        return;
+    }
+    
+    container.innerHTML = productos.map((producto, index) => `
+        <div class="ranking-item">
+            <div class="ranking-position">#${index + 1}</div>
+            <div class="ranking-details">
+                <h4>${producto.nombre}</h4>
+                <div class="ranking-stats">
+                    📦 ${producto.cantidad} unidades vendidas • 💰 $${formatPrice(producto.revenue)}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderInventarioAlerts() {
+    const criticoContainer = document.getElementById('stockCritico');
+    const bajoContainer = document.getElementById('stockBajo');
+    const normalContainer = document.getElementById('stockNormal');
+    
+    if (!criticoContainer || !bajoContainer || !normalContainer) return;
+    
+    const productosActivos = state.productos.filter(p => p.activo);
+    
+    const stockCritico = productosActivos.filter(p => p.stock === 0);
+    const stockBajo = productosActivos.filter(p => p.stock > 0 && p.stock <= p.stock_minimo);
+    const stockNormal = productosActivos.filter(p => p.stock > p.stock_minimo);
+    
+    // Render stock crítico
+    if (stockCritico.length === 0) {
+        criticoContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-muted);">✅ No hay productos agotados</div>';
+    } else {
+        criticoContainer.innerHTML = stockCritico.map(p => `
+            <div class="inventory-item critico">
+                <div>
+                    <strong>${p.nombre}</strong><br>
+                    <small>Código: ${p.codigo}</small>
+                </div>
+                <div style="color: var(--danger); font-weight: bold;">AGOTADO</div>
+            </div>
+        `).join('');
+    }
+    
+    // Render stock bajo
+    if (stockBajo.length === 0) {
+        bajoContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-muted);">✅ No hay productos con stock bajo</div>';
+    } else {
+        bajoContainer.innerHTML = stockBajo.map(p => `
+            <div class="inventory-item bajo">
+                <div>
+                    <strong>${p.nombre}</strong><br>
+                    <small>Código: ${p.codigo}</small>
+                </div>
+                <div style="color: var(--warning); font-weight: bold;">${p.stock} unidades</div>
+            </div>
+        `).join('');
+    }
+    
+    // Render stock normal (solo los primeros 10)
+    const stockNormalMuestra = stockNormal.slice(0, 10);
+    normalContainer.innerHTML = stockNormalMuestra.map(p => `
+        <div class="inventory-item normal">
+            <div>
+                <strong>${p.nombre}</strong><br>
+                <small>Código: ${p.codigo}</small>
+            </div>
+            <div style="color: var(--success); font-weight: bold;">${p.stock} unidades</div>
+        </div>
+    `).join('');
+    
+    if (stockNormal.length > 10) {
+        normalContainer.innerHTML += `<div style="text-align: center; padding: 1rem; color: var(--text-muted);">... y ${stockNormal.length - 10} productos más con stock normal</div>`;
+    }
+}
+
+function renderGraficos() {
+    renderVentasPorHora();
+    renderVentasPorCategoria();
+    renderMetodosPago();
+}
+
+function renderVentasPorHora() {
+    const container = document.getElementById('horasChart');
+    if (!container) return;
+    
+    // Inicializar array de 24 horas
+    const ventasPorHora = new Array(24).fill(0);
+    
+    reportesData.ventas.forEach(venta => {
+        const hora = new Date(venta.fecha).getHours();
+        ventasPorHora[hora] += venta.total;
+    });
+    
+    const maxVenta = Math.max(...ventasPorHora);
+    
+    container.innerHTML = ventasPorHora.map((venta, hora) => {
+        const altura = maxVenta > 0 ? (venta / maxVenta) * 100 : 0;
+        return `
+            <div class="chart-bar" 
+                 style="height: ${altura}%" 
+                 data-value="${hora}:00"
+                 title="$${formatPrice(venta)}">
+            </div>
+        `;
+    }).join('');
+}
+
+function renderVentasPorCategoria() {
+    const container = document.getElementById('categoriaChart');
+    if (!container) return;
+    
+    const categorias = new Map();
+    let totalVentas = 0;
+    
+    reportesData.ventas.forEach(venta => {
+        venta.productos.forEach(producto => {
+            const categoria = getProductoCategoria(producto.nombre);
+            const revenue = producto.cantidad * producto.precio;
+            
+            if (categorias.has(categoria)) {
+                categorias.set(categoria, categorias.get(categoria) + revenue);
+            } else {
+                categorias.set(categoria, revenue);
+            }
+            totalVentas += revenue;
+        });
+    });
+    
+    container.innerHTML = Array.from(categorias.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([categoria, venta]) => {
+            const porcentaje = totalVentas > 0 ? ((venta / totalVentas) * 100).toFixed(1) : 0;
+            return `
+                <div class="breakdown-item">
+                    <div class="item-label">${getCategoriaIcon(categoria)} ${categoria}</div>
+                    <div class="item-bar">
+                        <div class="item-progress" style="width: ${porcentaje}%"></div>
+                    </div>
+                    <div class="item-value">$${formatPrice(venta)}</div>
+                </div>
+            `;
+        }).join('');
+}
+
+function renderMetodosPago() {
+    const container = document.getElementById('metodosChart');
+    if (!container) return;
+    
+    const metodos = new Map();
+    let totalVentas = 0;
+    
+    reportesData.ventas.forEach(venta => {
+        if (metodos.has(venta.metodo)) {
+            metodos.set(venta.metodo, metodos.get(venta.metodo) + venta.total);
+        } else {
+            metodos.set(venta.metodo, venta.total);
+        }
+        totalVentas += venta.total;
+    });
+    
+    container.innerHTML = Array.from(metodos.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([metodo, venta]) => {
+            const porcentaje = totalVentas > 0 ? ((venta / totalVentas) * 100).toFixed(1) : 0;
+            return `
+                <div class="method-item">
+                    <div class="item-label">${getMetodoIcon(metodo)} ${capitalize(metodo)}</div>
+                    <div class="item-bar">
+                        <div class="item-progress" style="width: ${porcentaje}%"></div>
+                    </div>
+                    <div class="item-value">$${formatPrice(venta)}</div>
+                </div>
+            `;
+        }).join('');
+}
+
+// Funciones auxiliares
+function getMetodoBadgeClass(metodo) {
+    const classes = {
+        'efectivo': 'success',
+        'tarjeta': 'primary',
+        'transferencia': 'info'
+    };
+    return classes[metodo] || 'secondary';
+}
+
+function getMetodoIcon(metodo) {
+    const icons = {
+        'efectivo': '💵',
+        'tarjeta': '💳',
+        'transferencia': '🏦'
+    };
+    return icons[metodo] || '💰';
+}
+
+function getCategoriaIcon(categoria) {
+    const icons = {
+        'Cervezas': '🍺',
+        'Vinos': '🍷',
+        'Licores': '🥃',
+        'Bebidas': '🥤',
+        'Snacks': '🍟'
+    };
+    return icons[categoria] || '📦';
+}
+
+function getProductoCategoria(nombreProducto) {
+    if (nombreProducto.toLowerCase().includes('cerveza')) return 'Cervezas';
+    if (nombreProducto.toLowerCase().includes('vino')) return 'Vinos';
+    if (nombreProducto.toLowerCase().includes('pisco') || nombreProducto.toLowerCase().includes('licor')) return 'Licores';
+    if (nombreProducto.toLowerCase().includes('coca') || nombreProducto.toLowerCase().includes('bebida')) return 'Bebidas';
+    if (nombreProducto.toLowerCase().includes('papas') || nombreProducto.toLowerCase().includes('snack')) return 'Snacks';
+    return 'Otros';
+}
+
+function showVentaDetail(ventaId) {
+    const venta = reportesData.ventas.find(v => v.id === ventaId);
+    if (!venta) return;
+    
+    const modal = document.getElementById('ventaModal');
+    const detail = document.getElementById('ventaDetail');
+    
+    if (modal && detail) {
+        const fecha = new Date(venta.fecha);
+        
+        detail.innerHTML = `
+            <div style="margin-bottom: 1rem;">
+                <h3>Venta ${venta.id}</h3>
+                <p><strong>Fecha:</strong> ${fecha.toLocaleDateString('es-CL')} ${fecha.toLocaleTimeString('es-CL')}</p>
+                <p><strong>Método:</strong> ${getMetodoIcon(venta.metodo)} ${capitalize(venta.metodo)}</p>
+            </div>
+            
+            <h4>Productos:</h4>
+            <table class="data-table" style="margin-bottom: 1rem;">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unit.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${venta.productos.map(p => `
+                        <tr>
+                            <td>${p.nombre}</td>
+                            <td>${p.cantidad}</td>
+                            <td>$${formatPrice(p.precio)}</td>
+                            <td>$${formatPrice(p.cantidad * p.precio)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            
+            <div style="text-align: right; font-size: var(--text-lg); font-weight: bold;">
+                Total: $${formatPrice(venta.total)}
+            </div>
+        `;
+        
+        modal.style.display = 'block';
+        
+        // Cerrar modal
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.onclick = () => modal.style.display = 'none';
+        }
+        
+        window.onclick = (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+    }
+}
+
+// Inicializar reportes si estamos en la página correcta
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('ventasDiaReporte')) {
+        initReportesModule();
+    }
+});

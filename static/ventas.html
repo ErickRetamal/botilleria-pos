@@ -64,26 +64,214 @@
     <div class="view active">
         <div class="module-header">
             <div class="header-info">
-                <h2 class="module-title">📊 Historial de Ventas</h2>
-                <p class="module-subtitle">Consulta y analiza el historial de transacciones</p>
+                <h2 class="module-title">📊 Panel de Reportes</h2>
+                <p class="module-subtitle">Análisis completo de ventas, inventario y rendimiento</p>
+            </div>
+            <div class="header-actions">
+                <button id="exportReports" class="btn-action primary">
+                    <span class="btn-icon">📄</span>
+                    <span class="btn-text">Exportar</span>
+                </button>
+                <button id="printReports" class="btn-action secondary">
+                    <span class="btn-icon">🖨️</span>
+                    <span class="btn-text">Imprimir</span>
+                </button>
             </div>
         </div>
-        
-        <div class="content-container">
-            <div class="table-container">
-                <div class="table-content">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Fecha</th>
-                                <th>Total</th>
-                                <th>Método</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ventasTable"></tbody>
-                    </table>
+
+        <!-- Panel de Estadísticas Expandidas -->
+        <div class="stats-dashboard">
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <h3>Ventas del Día</h3>
+                        <div class="stat-number" id="ventasDiaReporte">$0</div>
+                        <div class="stat-subtitle">Última actualización: <span id="ultimaActualizacion">--</span></div>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-content">
+                        <h3>Ganancia Bruta</h3>
+                        <div class="stat-number" id="gananciaBruta">$0</div>
+                        <div class="stat-subtitle">Margen: <span id="margenGanancia">0%</span></div>
+                    </div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-content">
+                        <h3>Productos Vendidos</h3>
+                        <div class="stat-number" id="productosVendidos">0</div>
+                        <div class="stat-subtitle">Unidades totales</div>
+                    </div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-icon">🛒</div>
+                    <div class="stat-content">
+                        <h3>Transacciones</h3>
+                        <div class="stat-number" id="totalTransacciones">0</div>
+                        <div class="stat-subtitle">Ticket promedio: <span id="ticketPromedio">$0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros y Controles -->
+        <div class="report-controls">
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label>📅 Período</label>
+                    <select id="periodoFilter" class="form-select">
+                        <option value="hoy">Hoy</option>
+                        <option value="ayer">Ayer</option>
+                        <option value="semana">Esta Semana</option>
+                        <option value="mes">Este Mes</option>
+                        <option value="personalizado">Personalizado</option>
+                    </select>
+                </div>
+                <div class="filter-group" id="fechasPersonalizadas" style="display: none;">
+                    <label>Desde</label>
+                    <input type="date" id="fechaDesde" class="form-input">
+                    <label>Hasta</label>
+                    <input type="date" id="fechaHasta" class="form-input">
+                </div>
+                <div class="filter-group">
+                    <label>💳 Método de Pago</label>
+                    <select id="metodoFilter" class="form-select">
+                        <option value="">Todos los métodos</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="tarjeta">Tarjeta</option>
+                        <option value="transferencia">Transferencia</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button id="aplicarFiltros" class="btn-filter">🔍 Aplicar Filtros</button>
+                    <button id="limpiarFiltros" class="btn-filter secondary">🗑️ Limpiar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs de Contenido -->
+        <div class="report-tabs">
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="ventas">📊 Ventas</button>
+                <button class="tab-btn" data-tab="productos">📦 Productos</button>
+                <button class="tab-btn" data-tab="inventario">📋 Inventario</button>
+                <button class="tab-btn" data-tab="graficos">📈 Gráficos</button>
+            </div>
+
+            <!-- Tab: Ventas -->
+            <div id="tab-ventas" class="tab-content active">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>📋 Historial de Ventas</h3>
+                        <div class="section-actions">
+                            <input type="text" id="searchVentas" placeholder="🔍 Buscar por ID o método..." class="search-input">
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <div class="table-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID Venta</th>
+                                        <th>📅 Fecha y Hora</th>
+                                        <th>💰 Total</th>
+                                        <th>💳 Método</th>
+                                        <th>📦 Productos</th>
+                                        <th>🎯 Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ventasTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Productos Más Vendidos -->
+            <div id="tab-productos" class="tab-content">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>🏆 Productos Más Vendidos</h3>
+                        <div class="section-actions">
+                            <select id="topProductosFilter" class="form-select">
+                                <option value="10">Top 10</option>
+                                <option value="20">Top 20</option>
+                                <option value="50">Top 50</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="productos-ranking">
+                        <div class="ranking-grid" id="productosRanking">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Inventario -->
+            <div id="tab-inventario" class="tab-content">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>⚠️ Alertas de Inventario</h3>
+                    </div>
+                    <div class="inventory-alerts">
+                        <div class="alert-section">
+                            <h4>🔴 Stock Crítico (Agotado)</h4>
+                            <div id="stockCritico" class="inventory-list">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+                        </div>
+                        <div class="alert-section">
+                            <h4>🟡 Stock Bajo</h4>
+                            <div id="stockBajo" class="inventory-list">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+                        </div>
+                        <div class="alert-section">
+                            <h4>✅ Stock Normal</h4>
+                            <div id="stockNormal" class="inventory-list">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Gráficos -->
+            <div id="tab-graficos" class="tab-content">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>📊 Análisis Visual</h3>
+                    </div>
+                    <div class="charts-container">
+                        <div class="chart-card">
+                            <h4>📈 Ventas por Hora</h4>
+                            <div class="chart-placeholder" id="ventasPorHora">
+                                <div class="chart-bars" id="horasChart">
+                                    <!-- Gráfico simple de barras ASCII -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h4>🥧 Ventas por Categoría</h4>
+                            <div class="chart-placeholder" id="ventasPorCategoria">
+                                <div class="category-breakdown" id="categoriaChart">
+                                    <!-- Desglose por categorías -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h4>💳 Métodos de Pago</h4>
+                            <div class="chart-placeholder" id="metodosPago">
+                                <div class="payment-methods" id="metodosChart">
+                                    <!-- Distribución de métodos de pago -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
