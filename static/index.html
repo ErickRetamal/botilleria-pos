@@ -62,6 +62,12 @@
 
     <!-- Vista: Punto de Venta -->
     <main id="view-pos" class="view active" role="tabpanel">
+        <div class="module-header">
+            <div class="header-info">
+                <h2 class="module-title">💰 Punto de Venta</h2>
+                <p class="module-subtitle">Sistema de ventas rápido y eficiente</p>
+            </div>
+        </div>
         <div class="pos-container">
             <!-- Panel de Productos -->
             <section class="products-panel" aria-label="Catálogo de productos">
@@ -121,8 +127,9 @@
             <aside class="cart-panel" role="complementary" aria-label="Carrito de compras">
                 <header class="cart-header">
                     <h2>🛒 Carrito de Compra</h2>
-                    <button id="clearCart" class="btn-clear" aria-label="Limpiar carrito">
-                        Limpiar
+                    <button id="clearCart" class="btn-action secondary" aria-label="Limpiar carrito">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Limpiar</span>
                     </button>
                 </header>
 
@@ -157,8 +164,9 @@
                     </div>
                 </div>
 
-                <button id="processPayment" class="btn-payment" aria-label="Procesar venta">
-                    💰 Cobrar <span id="paymentTotal">$0</span>
+                <button id="processPayment" class="btn-action primary" aria-label="Procesar venta" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                    <span class="btn-icon">💰</span>
+                    <span class="btn-text">Cobrar <span id="paymentTotal">$0</span></span>
                 </button>
             </aside>
         </div>
@@ -169,19 +177,19 @@
         <div class="productos-layout">
             <!-- Panel Principal - Lista de Productos -->
             <div class="productos-main">
-                <div class="productos-header">
+                <div class="module-header">
                     <div class="header-info">
-                        <h2>📦 Gestión de Productos</h2>
-                        <p class="header-subtitle">Administra tu inventario de manera eficiente</p>
+                        <h2 class="module-title">📦 Gestión de Productos</h2>
+                        <p class="module-subtitle">Administra tu inventario de manera eficiente</p>
                     </div>
                     <div class="header-actions">
-                        <button id="btnNuevoProducto" class="btn-primary">
-                            <span class="icon">➕</span>
-                            Nuevo Producto
+                        <button id="btnNuevoProducto" class="btn-action primary">
+                            <span class="btn-icon">➕</span>
+                            <span class="btn-text">Nuevo Producto</span>
                         </button>
-                        <button id="exportData" class="btn-secondary">
-                            <span class="icon">📊</span>
-                            Exportar
+                        <button id="exportData" class="btn-action secondary">
+                            <span class="btn-icon">📊</span>
+                            <span class="btn-text">Exportar</span>
                         </button>
                     </div>
                 </div>
@@ -402,8 +410,11 @@
         <div class="retiro-container">
             <!-- Panel de Productos -->
             <div class="products-panel">
-                <div class="content-header">
-                    <h2>📤 Registrar Retiro/Consumo Interno</h2>
+                <div class="module-header">
+                    <div class="header-info">
+                        <h2 class="module-title">📤 Gestión de Retiros</h2>
+                        <p class="module-subtitle">Registra consumo interno y pérdidas de inventario</p>
+                    </div>
                 </div>
 
                 <div class="search-section">
@@ -424,7 +435,10 @@
             <div class="cart-panel">
                 <div class="cart-header">
                     <h2>📋 Items a Retirar</h2>
-                    <button id="clearRetiroCart" class="btn-clear">Limpiar</button>
+                    <button id="clearRetiroCart" class="btn-action secondary">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Limpiar</span>
+                    </button>
                 </div>
 
                 <div id="retiroCartItems" class="cart-items"></div>
@@ -441,8 +455,9 @@
                 </div>
 
                 <div class="payment-section">
-                    <button id="processRetiro" class="btn-primary danger">
-                        Registrar Retiro
+                    <button id="processRetiro" class="btn-action danger" style="width: 100%; justify-content: center;">
+                        <span class="btn-icon">📎</span>
+                        <span class="btn-text">Registrar Retiro</span>
                     </button>
                 </div>
             </div>
@@ -450,8 +465,11 @@
 
         <!-- Tabla de Retiros -->
         <div class="content-container" style="margin-top: 2rem;">
-            <div class="content-header">
-                <h2>📋 Historial de Retiros</h2>
+            <div class="module-header">
+                <div class="header-info">
+                    <h2 class="module-title">📋 Historial de Retiros</h2>
+                    <p class="module-subtitle">Revisa todos los retiros y consumos registrados</p>
+                </div>
             </div>
 
             <div class="table-container">
@@ -472,8 +490,11 @@
     <!-- Vista: Ventas -->
     <div id="view-ventas" class="view">
         <div class="content-container">
-            <div class="content-header">
-                <h2>📊 Historial de Ventas</h2>
+            <div class="module-header">
+                <div class="header-info">
+                    <h2 class="module-title">📊 Historial de Ventas</h2>
+                    <p class="module-subtitle">Consulta y analiza el historial de transacciones</p>
+                </div>
             </div>
 
             <div class="table-container">
