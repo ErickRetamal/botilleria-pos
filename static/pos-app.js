@@ -179,6 +179,14 @@ async function loadInitialData() {
             renderPOSProducts();
         }
         
+        // Renderizar tabla de productos si estamos en la página de productos
+        const productosTable = document.getElementById('productosTable');
+        if (productosTable) {
+            const productosActivos = state.productos.filter(p => p.activo);
+            renderProductsTable(productosActivos);
+            updateProductStats(productosActivos);
+        }
+        
         console.log('✅ Datos iniciales cargados correctamente');
     } catch (error) {
         console.error('❌ Error cargando datos iniciales:', error);
@@ -190,6 +198,101 @@ async function loadProducts() {
     try {
         console.log('📦 Cargando productos...');
         const response = await fetch(`${API_URL}/productos?limit=500`);
+        
+        // Si no hay backend, usar datos de prueba
+        if (response.status === 404) {
+            console.log('📦 Backend no disponible, usando datos de prueba...');
+            state.productos = [
+                {
+                    id: 1,
+                    codigo: 'CER001',
+                    nombre: 'Cerveza Cristal 350ml',
+                    descripcion: 'Cerveza rubia, refrescante',
+                    precio_compra: 800,
+                    precio_venta: 1200,
+                    stock: 24,
+                    stock_minimo: 5,
+                    categoria: 'Cervezas',
+                    marca: 'Cristal',
+                    cantidad: 350,
+                    unidad_medida: 'ml',
+                    litros: 0.35,
+                    imagen_url: null,
+                    activo: true
+                },
+                {
+                    id: 2,
+                    codigo: 'VIN001',
+                    nombre: 'Vino Casillero del Diablo Cabernet',
+                    descripcion: 'Vino tinto reserva',
+                    precio_compra: 3500,
+                    precio_venta: 5500,
+                    stock: 12,
+                    stock_minimo: 3,
+                    categoria: 'Vinos',
+                    marca: 'Casillero del Diablo',
+                    cantidad: 750,
+                    unidad_medida: 'ml',
+                    litros: 0.75,
+                    imagen_url: null,
+                    activo: true
+                },
+                {
+                    id: 3,
+                    codigo: 'LIC001',
+                    nombre: 'Pisco Capel 35°',
+                    descripcion: 'Pisco tradicional chileno',
+                    precio_compra: 4000,
+                    precio_venta: 6500,
+                    stock: 8,
+                    stock_minimo: 2,
+                    categoria: 'Licores',
+                    marca: 'Capel',
+                    cantidad: 750,
+                    unidad_medida: 'ml',
+                    litros: 0.75,
+                    imagen_url: null,
+                    activo: true
+                },
+                {
+                    id: 4,
+                    codigo: 'BEB001',
+                    nombre: 'Coca Cola 500ml',
+                    descripcion: 'Bebida gaseosa cola',
+                    precio_compra: 600,
+                    precio_venta: 1000,
+                    stock: 30,
+                    stock_minimo: 10,
+                    categoria: 'Bebidas',
+                    marca: 'Coca Cola',
+                    cantidad: 500,
+                    unidad_medida: 'ml',
+                    litros: 0.5,
+                    imagen_url: null,
+                    activo: true
+                },
+                {
+                    id: 5,
+                    codigo: 'SNK001',
+                    nombre: 'Papas Lays Original',
+                    descripcion: 'Papas fritas sabor original',
+                    precio_compra: 800,
+                    precio_venta: 1300,
+                    stock: 2,
+                    stock_minimo: 5,
+                    categoria: 'Snacks',
+                    marca: 'Lays',
+                    cantidad: 140,
+                    unidad_medida: 'g',
+                    litros: null,
+                    imagen_url: null,
+                    activo: true
+                }
+            ];
+            console.log('✅ Productos de prueba cargados:', state.productos.length);
+            return;
+        }
+        
         const data = await response.json();
         
         if (response.ok) {
@@ -803,9 +906,10 @@ function updateProductStats(productos) {
 
 function renderProductsTable(productos) {
     const tbody = document.getElementById('productosTable');
+    if (!tbody) return; // Exit if element doesn't exist
     
     if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No hay productos registrados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No hay productos registrados</td></tr>';
         return;
     }
     
