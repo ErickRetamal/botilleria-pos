@@ -9,7 +9,9 @@ const state = {
     selectedPaymentMethod: 'efectivo',
     editingProductId: null,
     selectedProduct: null,
-    currentView: 'pos'
+    currentView: 'pos',
+    quickModeActive: false,
+    discountAmount: 0
 };
 
 const API_URL = '/api';
@@ -77,6 +79,19 @@ function setupEventListeners() {
     document.querySelectorAll('.payment-btn').forEach(btn => {
         btn.addEventListener('click', () => selectPaymentMethod(btn.dataset.metodo));
     });
+
+    // Modo venta rápida
+    const quickModeToggle = document.getElementById('quickModeToggle');
+    if (quickModeToggle) quickModeToggle.addEventListener('change', toggleQuickMode);
+
+    // Descuentos
+    const toggleDiscountBtn = document.getElementById('toggleDiscount');
+    const discountAmountInput = document.getElementById('discountAmount');
+    if (toggleDiscountBtn) toggleDiscountBtn.addEventListener('click', toggleDiscountControls);
+    if (discountAmountInput) discountAmountInput.addEventListener('input', applyDiscount);
+
+    // Atajos de teclado
+    document.addEventListener('keydown', handleKeyboardShortcuts);
 
     // Productos - Escaneo rápido (solo en vista productos)
     const quickScanBtn = document.getElementById('quickScanBtn');
@@ -469,7 +484,7 @@ function renderPOSProducts(searchTerm = '') {
         
         return `
             <div class="product-card-pos ${outOfStock ? 'out-of-stock' : ''}" 
-                 onclick="${outOfStock ? '' : `addToCart(${producto.id})`}">
+                 onclick="${outOfStock ? '' : `addToCartQuickMode(${producto.id})`}">
                 <div class="product-image">${imagenHtml}</div>
                 <div class="product-info">
                     <div class="product-name">${producto.nombre}</div>
@@ -597,6 +612,9 @@ function clearCart() {
     
     if (confirm('¿Limpiar el carrito?')) {
         state.cart = [];
+        state.discountAmount = 0;
+        const discountInput = document.getElementById('discountAmount');
+        if (discountInput) discountInput.value = '';
         renderCart();
     }
 }
@@ -634,9 +652,7 @@ function renderCart() {
         </div>
     `).join('');
     
-    itemCount.textContent = state.cart.reduce((sum, item) => sum + item.cantidad, 0);
-    totalElement.textContent = `$${formatPrice(total)}`;
-    paymentTotal.textContent = `$${formatPrice(total)}`;
+    updateCartSummary();
 }
 
 function selectPaymentMethod(metodo) {
@@ -2455,6 +2471,167 @@ function showVentaDetail(ventaId) {
         };
     }
 }
+
+// ============== MODO VENTA RÁPIDA ==============
+
+function toggleQuickMode() {
+    const toggle = document.getElementById('quickModeToggle');
+    state.quickModeActive = toggle?.checked || false;
+    
+    // Cambiar clase del body para estilos
+    if (state.quickModeActive) {
+        document.body.classList.add('quick-mode-active');
+    } else {
+        document.body.classList.remove('quick-mode-active');
+    }
+    
+    console.log('Modo rápido:', state.quickModeActive ? 'ACTIVADO' : 'DESACTIVADO');
+}
+
+function toggleDiscountControls() {
+    const controls = document.getElementById('discountControls');
+    const button = document.getElementById('toggleDiscount');
+    
+    if (controls && button) {
+        const isVisible = controls.style.display !== 'none';
+        controls.style.display = isVisible ? 'none' : 'block';
+        button.innerHTML = isVisible ? '<span class="btn-icon">➕</span>' : '<span class="btn-icon">➖</span>';
+    }
+}
+
+function applyQuickDiscount(amount) {
+    const input = document.getElementById('discountAmount');
+    if (input) {
+        input.value = amount;
+        applyDiscount();
+    }
+}
+
+function applyDiscount() {
+    const input = document.getElementById('discountAmount');
+    state.discountAmount = parseFloat(input?.value) || 0;
+    updateCartSummary();
+}
+
+function clearDiscount() {
+    const input = document.getElementById('discountAmount');
+    if (input) {
+        input.value = '';
+        state.discountAmount = 0;
+        updateCartSummary();
+    }
+}
+
+function handleKeyboardShortcuts(event) {
+    // Solo procesar atajos en vista POS
+    if (state.currentView !== 'pos') return;
+    
+    // Prevenir comportamiento por defecto para F1, F2, F3
+    if (event.key === 'F1' || event.key === 'F2' || event.key === 'F3') {
+        event.preventDefault();
+    }
+    
+    switch (event.key) {
+        case 'F1':
+            // Efectivo y procesar
+            selectPaymentMethod('efectivo');
+            setTimeout(() => {
+                if (state.cart.length > 0) {
+                    processPayment();
+                }
+            }, 100);
+            break;
+            
+        case 'F2':
+            // Tarjeta y procesar  
+            selectPaymentMethod('tarjeta');
+            setTimeout(() => {
+                if (state.cart.length > 0) {
+                    processPayment();
+                }
+            }, 100);
+            break;
+            
+        case 'F3':
+            // Transferencia y procesar
+            selectPaymentMethod('transferencia');
+            setTimeout(() => {
+                if (state.cart.length > 0) {
+                    processPayment();
+                }
+            }, 100);
+            break;
+            
+        case 'F4':
+            // Toggle modo rápido
+            const toggle = document.getElementById('quickModeToggle');
+            if (toggle) {
+                toggle.checked = !toggle.checked;
+                toggleQuickMode();
+            }
+            break;
+            
+        case 'Escape':
+            // Limpiar carrito
+            clearCart();
+            break;
+    }
+}
+
+// Sobrescribir addToCart para soportar modo rápido
+function addToCartQuickMode(productoId) {
+    const producto = state.productos.find(p => p.id === productoId);
+    if (!producto || producto.stock === 0) return;
+    
+    if (state.quickModeActive) {
+        // En modo rápido, agregar directamente
+        addToCart(productoId);
+        
+        // Opcional: Auto-scroll al carrito en móviles
+        if (window.innerWidth <= 768) {
+            const cartPanel = document.querySelector('.cart-panel');
+            if (cartPanel) {
+                cartPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    } else {
+        // Modo normal, comportamiento estándar
+        addToCart(productoId);
+    }
+}
+
+function updateCartSummary() {
+    const itemCountEl = document.getElementById('cartItemCount');
+    const subtotalEl = document.getElementById('cartSubtotal');
+    const discountRowEl = document.getElementById('discountRow');
+    const discountLabelEl = document.getElementById('discountLabel');
+    const discountDisplayEl = document.getElementById('discountDisplay');
+    const totalEl = document.getElementById('cartTotal');
+    const paymentTotalEl = document.getElementById('paymentTotal');
+    
+    const itemCount = state.cart.reduce((sum, item) => sum + item.cantidad, 0);
+    const subtotal = state.cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+    const total = Math.max(0, subtotal + state.discountAmount); // No permitir totales negativos
+    
+    if (itemCountEl) itemCountEl.textContent = itemCount.toString();
+    if (subtotalEl) subtotalEl.textContent = `$${formatPrice(subtotal)}`;
+    if (totalEl) totalEl.textContent = `$${formatPrice(total)}`;
+    if (paymentTotalEl) paymentTotalEl.textContent = `$${formatPrice(total)}`;
+    
+    // Mostrar/ocultar fila de descuento
+    if (discountRowEl && discountLabelEl && discountDisplayEl) {
+        if (state.discountAmount !== 0) {
+            discountRowEl.style.display = 'flex';
+            discountLabelEl.textContent = state.discountAmount > 0 ? 'Recargo:' : 'Descuento:';
+            discountDisplayEl.textContent = `$${formatPrice(Math.abs(state.discountAmount))}`;
+            discountDisplayEl.style.color = state.discountAmount > 0 ? '#dc2626' : '#059669';
+        } else {
+            discountRowEl.style.display = 'none';
+        }
+    }
+}
+
+// ============== FIN MODO VENTA RÁPIDA ==============
 
 // Inicializar reportes si estamos en la página correcta
 document.addEventListener('DOMContentLoaded', () => {
