@@ -14,6 +14,11 @@ def create_tables_and_products():
     
     # Obtener URL de la base de datos
     database_url = settings.get_database_url()
+    
+    # Si es MySQL, forzar el uso de PyMySQL como driver
+    if database_url.startswith('mysql://'):
+        database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
+    
     print(f"🔗 Conectando a Railway MySQL...")
     
     # Crear engine y tablas

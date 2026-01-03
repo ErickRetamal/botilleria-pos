@@ -7,6 +7,11 @@ settings = get_settings()
 
 # Crear engine de SQLAlchemy (MySQL en Railway o SQLite local)
 database_url = settings.get_database_url()
+
+# Si es MySQL, forzar el uso de PyMySQL como driver
+if database_url.startswith('mysql://'):
+    database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
+
 print(f"🔗 Conectando a: {database_url.split('@')[0]}@[HOST_HIDDEN]" if '@' in database_url else database_url)
 
 engine = create_engine(
