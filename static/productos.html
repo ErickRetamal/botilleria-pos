@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema POS profesional para botillería - Gestión de Productos">
+    <meta name="theme-color" content="#2563eb">
+    <title>Gestión de Productos - Botillería POS</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/pos-style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" role="navigation" aria-label="Navegación principal">
+        <div class="navbar-brand">
+            <h1>🍺 Botillería POS</h1>
+        </div>
+        <div class="navbar-menu" role="tablist">
+            <a href="/static/pos.html" class="nav-btn" role="tab">
+                <span class="icon" aria-hidden="true">💰</span>
+                Punto de Venta
+            </a>
+            <button class="nav-btn active" data-view="productos" role="tab" aria-selected="true">
+                <span class="icon" aria-hidden="true">📦</span>
+                Productos
+            </button>
+            <a href="/static/retiros.html" class="nav-btn" role="tab">
+                <span class="icon" aria-hidden="true">📤</span>
+                Retiros
+            </a>
+            <a href="/static/ventas.html" class="nav-btn" role="tab">
+                <span class="icon" aria-hidden="true">📊</span>
+                Reportes
+            </a>
+        </div>
+        <div class="navbar-stats" aria-label="Estadísticas del día">
+            <div class="stat-item">
+                <span class="stat-label">Ventas Hoy</span>
+                <span class="stat-value" id="ventasHoy" aria-live="polite">$0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Retiros Hoy</span>
+                <span class="stat-value warning" id="retirosHoy" aria-live="polite">$0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Utilidad Neta</span>
+                <span class="stat-value success" id="utilidadNeta" aria-live="polite">$0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Vista: Productos -->
+    <div class="view active">
+        <div class="module-header">
+            <div class="header-info">
+                <h2 class="module-title">📦 Gestión de Productos</h2>
+                <p class="module-subtitle">Administra tu inventario de manera eficiente</p>
+            </div>
+            <div class="header-actions">
+                <button id="btnNuevoProducto" class="btn-action primary">
+                    <span class="btn-icon">➕</span>
+                    <span class="btn-text">Nuevo Producto</span>
+                </button>
+                <button id="exportData" class="btn-action secondary">
+                    <span class="btn-icon">📊</span>
+                    <span class="btn-text">Exportar</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="productos-layout">
+            <!-- Panel Principal - Lista de Productos -->
+            <div class="productos-main">
+                <!-- Búsqueda y Filtros -->
+                <div class="productos-search">
+                    <div class="search-group">
+                        <div class="search-input-wrapper">
+                            <span class="search-icon">🔍</span>
+                            <input 
+                                type="text" 
+                                id="productSearchInput" 
+                                placeholder="Buscar productos por código, nombre o categoría..."
+                                autocomplete="off"
+                            >
+                        </div>
+                        <button id="quickScanBtn" class="btn-scan">
+                            <span class="icon">🔫</span>
+                            Scanner
+                        </button>
+                    </div>
+                    <div class="filter-pills">
+                        <button class="filter-pill active" data-category="">Todos</button>
+                        <button class="filter-pill" data-category="Cervezas">Cervezas</button>
+                        <button class="filter-pill" data-category="Vinos">Vinos</button>
+                        <button class="filter-pill" data-category="Licores">Licores</button>
+                        <button class="filter-pill" data-category="Bebidas">Bebidas</button>
+                        <button class="filter-pill" data-category="Snacks">Snacks</button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Productos Mejorada -->
+                <div class="table-container">
+                    <div class="table-content">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-code">Código</th>
+                                    <th class="col-name">Producto</th>
+                                    <th class="col-category">Categoría</th>
+                                    <th class="col-price">Precio</th>
+                                    <th class="col-stock">Stock</th>
+                                    <th class="col-status">Estado</th>
+                                    <th class="col-actions">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productosTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Lateral - Formulario -->
+            <div class="productos-sidebar">
+                <div class="sidebar-content">
+                    <!-- Formulario de Producto -->
+                    <div id="productForm" class="product-form">
+                        <div class="form-header">
+                            <h3 id="formTitle">➕ Nuevo Producto</h3>
+                            <button id="closeSidebar" class="btn-close">✕</button>
+                        </div>
+
+                        <form id="productoForm" class="form-content">
+                            <input type="hidden" id="productId">
+                            
+                            <div class="form-section">
+                                <h4>📋 Información Básica</h4>
+                                
+                                <div class="form-group">
+                                    <label>Código del Producto *</label>
+                                    <input type="text" id="codigo" placeholder="EAN, SKU o código interno" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Nombre del Producto *</label>
+                                    <input type="text" id="nombre" placeholder="Nombre descriptivo del producto" required>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Categoría</label>
+                                        <select id="categoria">
+                                            <option value="">Seleccionar...</option>
+                                            <option value="Cervezas">🍺 Cervezas</option>
+                                            <option value="Vinos">🍷 Vinos</option>
+                                            <option value="Licores">🥃 Licores</option>
+                                            <option value="Bebidas">🥤 Bebidas</option>
+                                            <option value="Snacks">🍿 Snacks</option>
+                                            <option value="Otros">📦 Otros</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Marca</label>
+                                        <input type="text" id="marca" placeholder="Ej: Cristal, Santa Rita">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Cantidad</label>
+                                        <input type="number" id="cantidad" step="0.01" min="0" placeholder="500">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Unidad</label>
+                                        <select id="unidadMedida">
+                                            <option value="">Seleccionar...</option>
+                                            <option value="ml">💧 Mililitros (ml)</option>
+                                            <option value="L">💧 Litros (L)</option>
+                                            <option value="cc">💧 Centímetros cúbicos (cc)</option>
+                                            <option value="g">⚖️ Gramos (g)</option>
+                                            <option value="kg">⚖️ Kilogramos (kg)</option>
+                                            <option value="oz">⚖️ Onzas (oz)</option>
+                                            <option value="unidades">📎 Unidades</option>
+                                            <option value="paquetes">📦 Paquetes</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Volumen (Litros) - Legacy</label>
+                                        <input type="number" id="litros" step="0.01" min="0" placeholder="0.33">
+                                        <small class="form-hint">Solo para productos líquidos existentes</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>URL Imagen</label>
+                                        <input type="url" id="imagen_url" placeholder="https://...">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h4>💰 Precios</h4>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Precio Compra *</label>
+                                        <div class="input-with-currency">
+                                            <span class="currency">$</span>
+                                            <input type="number" id="precioCompra" step="1" min="0" placeholder="0" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Precio Venta *</label>
+                                        <div class="input-with-currency">
+                                            <span class="currency">$</span>
+                                            <input type="number" id="precioVenta" step="1" min="0" placeholder="0" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="profit-display">
+                                    <span class="profit-label">Margen de ganancia:</span>
+                                    <span id="profitMargin" class="profit-value">0%</span>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h4>📦 Inventario</h4>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Stock Actual</label>
+                                        <input type="number" id="stock" min="0" value="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Stock Mínimo</label>
+                                        <input type="number" id="stockMinimo" min="0" value="5">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Descripción (Opcional)</label>
+                                    <textarea id="descripcion" rows="3" placeholder="Información adicional del producto..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary btn-large">
+                                    <span class="icon">💾</span>
+                                    Guardar Producto
+                                </button>
+                                <button type="button" id="cancelForm" class="btn-secondary btn-large">
+                                    <span class="icon">🚫</span>
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="sidebar-stats">
+                        <h4>📊 Resumen Rápido</h4>
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <span class="stat-icon">📦</span>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="totalProducts">0</span>
+                                    <span class="stat-label">Productos</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-icon">⚠️</span>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="lowStock">0</span>
+                                    <span class="stat-label">Stock Bajo</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de agregar stock -->
+    <div id="addStockModal" class="modal">
+        <div class="modal-content modal-small">
+            <span class="modal-close" onclick="closeStockModal()">&times;</span>
+            <h2>➕ Agregar Stock</h2>
+            <div id="stockProductInfo" class="product-info-card"></div>
+            <form id="addStockForm" class="stock-form">
+                <div class="form-group">
+                    <label>Cantidad a Agregar *</label>
+                    <input type="number" id="stockQuantity" min="1" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label>Stock Actual</label>
+                    <input type="number" id="currentStock" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Stock Final</label>
+                    <input type="number" id="finalStock" readonly>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">✅ Confirmar</button>
+                    <button type="button" class="btn-secondary" onclick="closeStockModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/pos-app.js"></script>
+</body>
+</html>

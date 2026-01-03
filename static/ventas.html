@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema POS profesional para botillería - Historial de Ventas">
+    <meta name="theme-color" content="#2563eb">
+    <title>Historial de Ventas - Botillería POS</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/pos-style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" role="navigation" aria-label="Navegación principal">
+        <div class="navbar-brand">
+            <h1>🍺 Botillería POS</h1>
+        </div>
+        <div class="navbar-menu" role="tablist">
+            <a href="/static/pos.html" class="nav-btn" role="tab">
+                <span class="icon" aria-hidden="true">💰</span>
+                Punto de Venta
+            </a>
+            <a href="/static/productos.html" class="nav-btn" role="tab">
+                <span class="icon" aria-hidden="true">📦</span>
+                Productos
+            </a>
+            <a href="/static/retiros.html" class="nav-btn" role="tab">
+                <span class="icon" aria-hidden="true">📤</span>
+                Retiros
+            </a>
+            <button class="nav-btn active" data-view="ventas" role="tab" aria-selected="true">
+                <span class="icon" aria-hidden="true">📊</span>
+                Reportes
+            </button>
+        </div>
+        <div class="navbar-stats" aria-label="Estadísticas del día">
+            <div class="stat-item">
+                <span class="stat-label">Ventas Hoy</span>
+                <span class="stat-value" id="ventasHoy" aria-live="polite">$0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Retiros Hoy</span>
+                <span class="stat-value warning" id="retirosHoy" aria-live="polite">$0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Utilidad Neta</span>
+                <span class="stat-value success" id="utilidadNeta" aria-live="polite">$0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Vista: Ventas -->
+    <div class="view active">
+        <div class="module-header">
+            <div class="header-info">
+                <h2 class="module-title">📊 Historial de Ventas</h2>
+                <p class="module-subtitle">Consulta y analiza el historial de transacciones</p>
+            </div>
+        </div>
+        
+        <div class="content-container">
+            <div class="table-container">
+                <div class="table-content">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Método</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ventasTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de detalle de venta -->
+    <div id="ventaModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Detalle de Venta</h2>
+            <div id="ventaDetail"></div>
+        </div>
+    </div>
+
+    <script src="/static/pos-app.js"></script>
+</body>
+</html>

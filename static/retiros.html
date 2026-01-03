@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema POS profesional para botillería - Gestión de Retiros">
+    <meta name="theme-color" content="#2563eb">
+    <title>Gestión de Retiros - Botillería POS</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/pos-style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" role="navigation" aria-label="Navegación principal">
+        <div class="navbar-brand">
+            <h1>🍺 Botillería POS</h1>
+        </div>
+        <div class="navbar-menu" role="tablist">
+            <a href="/static/pos.html" class="nav-btn" role="tab">
+                <span class="icon" aria-hidden="true">💰</span>
+                Punto de Venta
+            </a>
+            <a href="/static/productos.html" class="nav-btn" role="tab">
+                <span class="icon" aria-hidden="true">📦</span>
+                Productos
+            </a>
+            <button class="nav-btn active" data-view="retiros" role="tab" aria-selected="true">
+                <span class="icon" aria-hidden="true">📤</span>
+                Retiros
+            </button>
+            <a href="/static/ventas.html" class="nav-btn" role="tab">
+                <span class="icon" aria-hidden="true">📊</span>
+                Reportes
+            </a>
+        </div>
+        <div class="navbar-stats" aria-label="Estadísticas del día">
+            <div class="stat-item">
+                <span class="stat-label">Ventas Hoy</span>
+                <span class="stat-value" id="ventasHoy" aria-live="polite">$0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Retiros Hoy</span>
+                <span class="stat-value warning" id="retirosHoy" aria-live="polite">$0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Utilidad Neta</span>
+                <span class="stat-value success" id="utilidadNeta" aria-live="polite">$0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Vista: Retiros -->
+    <div class="view active">
+        <div class="module-header">
+            <div class="header-info">
+                <h2 class="module-title">📤 Gestión de Retiros</h2>
+                <p class="module-subtitle">Registra consumo interno y pérdidas de inventario</p>
+            </div>
+        </div>
+        
+        <div class="retiro-container">
+            <!-- Panel de Productos -->
+            <div class="products-panel">
+                <div class="search-section">
+                    <input 
+                        type="text" 
+                        id="retiroSearchInput" 
+                        placeholder="🔍 Buscar producto para retirar"
+                        class="search-input"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <!-- Grid de productos -->
+                <div id="retiroProductsGrid" class="products-grid"></div>
+            </div>
+
+            <!-- Panel de Carrito de Retiro -->
+            <div class="cart-panel">
+                <div class="cart-header">
+                    <h2>📋 Items a Retirar</h2>
+                    <button id="clearRetiroCart" class="btn-action secondary">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Limpiar</span>
+                    </button>
+                </div>
+
+                <div id="retiroCartItems" class="cart-items"></div>
+
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Items:</span>
+                        <span id="retiroItemCount">0</span>
+                    </div>
+                    <div class="summary-row total warning">
+                        <span>PÉRDIDA TOTAL:</span>
+                        <span id="retiroTotal">$0</span>
+                    </div>
+                </div>
+
+                <div class="payment-section">
+                    <button id="processRetiro" class="btn-action danger" style="width: 100%; justify-content: center;">
+                        <span class="btn-icon">📎</span>
+                        <span class="btn-text">Registrar Retiro</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de Historial de Retiros -->
+        <div class="content-container" style="margin-top: 1rem;">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>📋 Historial de Retiros</h3>
+                </div>
+                <div class="table-content">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Pérdida</th>
+                            </tr>
+                        </thead>
+                        <tbody id="retirosTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/pos-app.js"></script>
+</body>
+</html>
