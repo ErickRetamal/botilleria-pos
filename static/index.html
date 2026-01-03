@@ -3,55 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Botillería - POS</title>
+    <meta name="description" content="Sistema POS profesional para botillería - Gestión de ventas, inventario y reportes">
+    <meta name="theme-color" content="#2563eb">
+    <title>Botillería POS - Sistema Profesional de Gestión</title>
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="/static/pos-style.css">
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Navegación principal">
         <div class="navbar-brand">
             <h1>🍺 Botillería POS</h1>
         </div>
-        <div class="navbar-menu">
-            <button class="nav-btn active" data-view="pos">
-                <span class="icon">💰</span>
+        <div class="navbar-menu" role="tablist">
+            <button class="nav-btn active" data-view="pos" role="tab" aria-selected="true" aria-controls="view-pos">
+                <span class="icon" aria-hidden="true">💰</span>
                 Punto de Venta
             </button>
-            <button class="nav-btn" data-view="productos">
-                <span class="icon">📦</span>
+            <button class="nav-btn" data-view="productos" role="tab" aria-selected="false" aria-controls="view-productos">
+                <span class="icon" aria-hidden="true">📦</span>
                 Productos
             </button>
-            <button class="nav-btn" data-view="retiros">
-                <span class="icon">📤</span>
+            <button class="nav-btn" data-view="retiros" role="tab" aria-selected="false" aria-controls="view-retiros">
+                <span class="icon" aria-hidden="true">📤</span>
                 Retiros
             </button>
-            <button class="nav-btn" data-view="ventas">
-                <span class="icon">📊</span>
+            <button class="nav-btn" data-view="ventas" role="tab" aria-selected="false" aria-controls="view-ventas">
+                <span class="icon" aria-hidden="true">📊</span>
                 Reportes
             </button>
         </div>
-        <div class="navbar-stats">
+        <div class="navbar-stats" aria-label="Estadísticas del día">
             <div class="stat-item">
                 <span class="stat-label">Ventas Hoy</span>
-                <span class="stat-value" id="ventasHoy">$0</span>
+                <span class="stat-value" id="ventasHoy" aria-live="polite">$0</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Retiros Hoy</span>
-                <span class="stat-value warning" id="retirosHoy">$0</span>
+                <span class="stat-value warning" id="retirosHoy" aria-live="polite">$0</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Utilidad Neta</span>
-                <span class="stat-value success" id="utilidadNeta">$0</span>
+                <span class="stat-value success" id="utilidadNeta" aria-live="polite">$0</span>
             </div>
         </div>
     </nav>
 
     <!-- Vista: Punto de Venta -->
-    <div id="view-pos" class="view active">
+    <main id="view-pos" class="view active" role="tabpanel">
         <div class="pos-container">
             <!-- Panel de Productos -->
-            <div class="products-panel">
+            <section class="products-panel" aria-label="Catálogo de productos">
                 <div class="search-section">
                     <input 
                         type="text" 
@@ -59,28 +72,41 @@
                         placeholder="🔍 Buscar por código o nombre (F2)"
                         class="search-input"
                         autocomplete="off"
+                        aria-label="Búsqueda de productos"
                     >
                 </div>
 
                 <!-- Filtros compactos -->
-                <div class="pos-filters">
+                <div class="pos-filters" role="region" aria-label="Filtros de productos">
                     <div class="filter-row">
                         <!-- Filtros de categoría como pills -->
-                        <div class="category-pills">
-                            <button class="pill active" data-categoria="">🌟 Todos</button>
-                            <button class="pill" data-categoria="Cervezas">🍺</button>
-                            <button class="pill" data-categoria="Vinos">🍷</button>
-                            <button class="pill" data-categoria="Licores">🥃</button>
-                            <button class="pill" data-categoria="Bebidas">🥤</button>
-                            <button class="pill" data-categoria="Snacks">🍿</button>
+                        <div class="category-pills" role="radiogroup" aria-label="Filtrar por categoría">
+                            <button class="pill active" data-categoria="" role="radio" aria-checked="true">
+                                🌟 Todos
+                            </button>
+                            <button class="pill" data-categoria="Cervezas" role="radio" aria-checked="false">
+                                🍺
+                            </button>
+                            <button class="pill" data-categoria="Vinos" role="radio" aria-checked="false">
+                                🍷
+                            </button>
+                            <button class="pill" data-categoria="Licores" role="radio" aria-checked="false">
+                                🥃
+                            </button>
+                            <button class="pill" data-categoria="Bebidas" role="radio" aria-checked="false">
+                                🥤
+                            </button>
+                            <button class="pill" data-categoria="Snacks" role="radio" aria-checked="false">
+                                🍿
+                            </button>
                         </div>
                         
                         <!-- Filtros adicionales en selects compactos -->
                         <div class="filter-selects">
-                            <select id="unidadFilter" class="compact-select">
+                            <select id="unidadFilter" class="compact-select" aria-label="Filtrar por unidad">
                                 <option value="">⚖️ Unidad</option>
                             </select>
-                            <select id="marcaFilter" class="compact-select">
+                            <select id="marcaFilter" class="compact-select" aria-label="Filtrar por marca">
                                 <option value="">🏭 Marca</option>
                             </select>
                         </div>
@@ -88,50 +114,55 @@
                 </div>
 
                 <!-- Grid de productos -->
-                <div id="posProductsGrid" class="products-grid"></div>
-            </div>
+                <div id="posProductsGrid" class="products-grid" role="grid" aria-label="Lista de productos disponibles"></div>
+            </section>
 
             <!-- Panel de Carrito -->
-            <div class="cart-panel">
-                <div class="cart-header">
+            <aside class="cart-panel" role="complementary" aria-label="Carrito de compras">
+                <header class="cart-header">
                     <h2>🛒 Carrito de Compra</h2>
-                    <button id="clearCart" class="btn-clear">Limpiar</button>
-                </div>
+                    <button id="clearCart" class="btn-clear" aria-label="Limpiar carrito">
+                        Limpiar
+                    </button>
+                </header>
 
-                <div id="cartItems" class="cart-items"></div>
+                <div id="cartItems" class="cart-items" role="list" aria-label="Productos en el carrito"></div>
 
-                <div class="cart-summary">
+                <footer class="cart-summary" role="region" aria-label="Resumen de compra">
                     <div class="summary-row">
                         <span>Items:</span>
-                        <span id="cartItemCount">0</span>
+                        <span id="cartItemCount" aria-live="polite">0</span>
                     </div>
                     <div class="summary-row total">
                         <span>TOTAL:</span>
-                        <span id="cartTotal">$0</span>
+                        <span id="cartTotal" class="value" aria-live="assertive">$0</span>
                     </div>
-                </div>
+                </footer>
 
                 <div class="payment-section">
-                    <label>Método de Pago:</label>
-                    <div class="payment-methods">
-                        <button class="payment-btn active" data-metodo="efectivo">
-                            💵 Efectivo
+                    <label>💳 Método de Pago</label>
+                    <div class="payment-methods" role="radiogroup" aria-label="Seleccionar método de pago">
+                        <button class="payment-btn active" data-metodo="efectivo" role="radio" aria-checked="true">
+                            <span class="icon" aria-hidden="true">💵</span>
+                            Efectivo
                         </button>
-                        <button class="payment-btn" data-metodo="tarjeta">
-                            💳 Tarjeta
+                        <button class="payment-btn" data-metodo="tarjeta" role="radio" aria-checked="false">
+                            <span class="icon" aria-hidden="true">💳</span>
+                            Tarjeta
                         </button>
-                        <button class="payment-btn" data-metodo="transferencia">
-                            📱 Transferencia
+                        <button class="payment-btn" data-metodo="transferencia" role="radio" aria-checked="false">
+                            <span class="icon" aria-hidden="true">📱</span>
+                            Transferencia
                         </button>
                     </div>
                 </div>
 
-                <button id="processPayment" class="btn-payment">
-                    Cobrar <span id="paymentTotal">$0</span>
+                <button id="processPayment" class="btn-payment" aria-label="Procesar venta">
+                    💰 Cobrar <span id="paymentTotal">$0</span>
                 </button>
-            </div>
+            </aside>
         </div>
-    </div>
+    </main>
 
     <!-- Vista: Productos -->
     <div id="view-productos" class="view">
