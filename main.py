@@ -46,9 +46,9 @@ try:
             logger.info("No products found, creating sample data...")
             # Crear algunos productos básicos
             productos_basicos = [
-                {"codigo": "PISCO001", "nombre": "Pisco Alto del Carmen 35°", "precio": 6990, "stock": 12, "categoria": "Pisco", "marca": "Alto del Carmen", "litros": 1.0},
-                {"codigo": "VODKA001", "nombre": "Vodka Absolut", "precio": 14990, "stock": 8, "categoria": "Vodka", "marca": "Absolut", "litros": 1.0},
-                {"codigo": "RON001", "nombre": "Ron Bacardi Blanco", "precio": 8990, "stock": 10, "categoria": "Ron", "marca": "Bacardi", "litros": 1.0}
+                {"codigo": "PISCO001", "nombre": "Pisco Alto del Carmen 35°", "precio_compra": 5500, "precio_venta": 6990, "stock": 12, "categoria": "Licores", "marca": "Alto del Carmen", "litros": 1.0},
+                {"codigo": "VODKA001", "nombre": "Vodka Absolut", "precio_compra": 11990, "precio_venta": 14990, "stock": 8, "categoria": "Licores", "marca": "Absolut", "litros": 1.0},
+                {"codigo": "RON001", "nombre": "Ron Bacardi Blanco", "precio_compra": 6990, "precio_venta": 8990, "stock": 10, "categoria": "Licores", "marca": "Bacardi", "litros": 1.0}
             ]
             
             for producto_data in productos_basicos:
