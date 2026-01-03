@@ -220,9 +220,10 @@ body {
 .pos-container,
 .retiro-container {
     display: grid;
-    grid-template-columns: 1fr 320px;  /* Smaller sidebar */
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: 1fr;
     gap: 0.75rem;
-    height: calc(100vh - 50px);  /* Full height minus navbar */
+    height: calc(100vh - 50px);
     padding: 0.75rem;
     overflow: hidden;
     box-sizing: border-box;
@@ -630,10 +631,10 @@ body {
     flex-direction: column;
     box-shadow: var(--shadow);
     border: 1px solid var(--border-light);
-    height: calc(100vh - 50px);
+    height: 100%;
+    max-height: 100%;
     overflow: hidden;
-    position: sticky;
-    top: 20px;
+    box-sizing: border-box;
 }
 
 .cart-header {
@@ -660,6 +661,7 @@ body {
     scrollbar-color: var(--primary-light) var(--gray-50);
     min-height: 0;
     max-height: none;
+    box-sizing: border-box;
 }
 
 .cart-footer {
@@ -669,6 +671,7 @@ body {
     background: linear-gradient(135deg, var(--surface), var(--gray-50));
     position: relative;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
 }
 
 .cart-header h2 {
