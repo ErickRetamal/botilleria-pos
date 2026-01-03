@@ -57,6 +57,12 @@
                 <span class="stat-label">Utilidad Neta</span>
                 <span class="stat-value success" id="utilidadNeta" aria-live="polite">$0</span>
             </div>
+            <div class="stat-item cash-control">
+                <button id="cashControlBtn" class="cash-control-btn">
+                    <span class="cash-icon">💰</span>
+                    <span id="cashStatus">Caja Cerrada</span>
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -66,14 +72,19 @@
             <!-- Panel de Productos -->
             <section class="products-panel" aria-label="Catálogo de productos">
                 <div class="search-section">
-                    <input 
-                        type="text" 
-                        id="posSearchInput" 
-                        placeholder="🔍 Buscar por código o nombre (F2)"
-                        class="search-input"
-                        autocomplete="off"
-                        aria-label="Búsqueda de productos"
-                    >
+                    <div class="search-input-group">
+                        <input 
+                            type="text" 
+                            id="posSearchInput" 
+                            placeholder="🔍 Buscar por código o nombre (F2)"
+                            class="search-input"
+                            autocomplete="off"
+                            aria-label="Búsqueda de productos"
+                        >
+                        <button id="codeSearchBtn" class="btn-action secondary code-search-btn" title="Buscar por código de barras">
+                            <span class="btn-icon">📱</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Filtros compactos -->
@@ -214,6 +225,119 @@
             </aside>
         </div>
     </main>
+
+    <!-- Modal Control de Caja -->
+    <div id="cashModal" class="modal" style="display: none;">
+        <div class="modal-content cash-modal">
+            <div class="modal-header">
+                <h2 id="cashModalTitle">💰 Apertura de Caja</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Apertura de Caja -->
+                <div id="cashOpenSection">
+                    <div class="cash-form-group">
+                        <label for="initialAmount">💵 Monto Inicial en Caja</label>
+                        <input type="number" id="initialAmount" placeholder="0" min="0" step="1000">
+                        <small>Dinero en efectivo con que inicia el turno</small>
+                    </div>
+                    
+                    <div class="cash-form-group">
+                        <label for="operatorName">👤 Operador</label>
+                        <input type="text" id="operatorName" placeholder="Nombre del cajero">
+                    </div>
+                    
+                    <button id="openCashBtn" class="btn-action primary">
+                        <span class="btn-icon">🔓</span>
+                        <span class="btn-text">Abrir Caja</span>
+                    </button>
+                </div>
+                
+                <!-- Cierre de Caja -->
+                <div id="cashCloseSection" style="display: none;">
+                    <div class="cash-summary">
+                        <h3>📊 Resumen del Turno</h3>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <span class="label">💰 Monto Inicial:</span>
+                                <span id="summaryInitial">$0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">💵 Ventas Efectivo:</span>
+                                <span id="summaryCashSales">$0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">💳 Ventas Tarjeta:</span>
+                                <span id="summaryCardSales">$0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">📤 Retiros:</span>
+                                <span id="summaryWithdrawals" class="negative">-$0</span>
+                            </div>
+                            <div class="summary-item expected">
+                                <span class="label">🎯 Efectivo Esperado:</span>
+                                <span id="expectedCash">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="cash-count">
+                        <h3>💸 Conteo Real de Caja</h3>
+                        <div class="cash-form-group">
+                            <label for="actualCash">Efectivo Contado</label>
+                            <input type="number" id="actualCash" placeholder="0" min="0" step="1000">
+                        </div>
+                        
+                        <div class="difference-alert" id="differenceAlert" style="display: none;">
+                            <div class="alert-content">
+                                <span class="alert-icon">⚠️</span>
+                                <span class="alert-text">
+                                    <strong>Diferencia detectada:</strong>
+                                    <span id="differenceAmount">$0</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="closeCashBtn" class="btn-action danger">
+                        <span class="btn-icon">🔒</span>
+                        <span class="btn-text">Cerrar Caja</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Búsqueda por Código -->
+    <div id="codeSearchModal" class="modal" style="display: none;">
+        <div class="modal-content code-modal">
+            <div class="modal-header">
+                <h2>🔍 Buscar por Código</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="code-input-group">
+                    <input type="text" id="codeSearchInput" placeholder="Escanea o escribe código" autocomplete="off">
+                    <button id="cameraBtn" class="btn-action secondary">
+                        <span class="btn-icon">📱</span>
+                        <span class="btn-text">Cámara</span>
+                    </button>
+                </div>
+                
+                <!-- Resultado de búsqueda -->
+                <div id="codeSearchResult" class="search-result" style="display: none;"></div>
+                
+                <!-- Scanner de cámara -->
+                <div id="cameraSection" style="display: none;">
+                    <video id="cameraVideo" autoplay playsinline></video>
+                    <canvas id="cameraCanvas" style="display: none;"></canvas>
+                    <button id="stopCameraBtn" class="btn-action secondary">Detener Cámara</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="pos-app.js"></script>
 </body>

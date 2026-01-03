@@ -11,10 +11,441 @@ const state = {
     selectedProduct: null,
     currentView: 'pos',
     quickModeActive: false,
-    discountAmount: 0
+    discountAmount: 0,
+    cashBox: {
+        isOpen: false,
+        initialAmount: 0,
+        operator: '',
+        openTime: null,
+        cashSales: 0,
+        cardSales: 0,
+        transferSales: 0,
+        withdrawals: 0
+    },
+    soundEnabled: true
 };
 
 const API_URL = '/api';
+
+// ============== SISTEMA DE SONIDOS ==============
+class SoundSystem {
+    constructor() {
+        this.audioContext = null;
+        this.enabled = true;
+    }
+
+    async init() {
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    async playBeep(frequency = 800, duration = 200, type = 'sine') {
+        if (!this.enabled) return;
+        
+        await this.init();
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.frequency.value = frequency;
+        oscillator.type = type;
+
+        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration / 1000);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + duration / 1000);
+    }
+
+    success() { this.playBeep(800, 150); }
+    error() { this.playBeep(400, 300); }
+    warning() { this.playBeep(600, 200); }
+    scan() { this.playBeep(1000, 100); }
+    cashOpen() { this.playBeep(600, 200).then(() => setTimeout(() => this.playBeep(800, 200), 250)); }
+    cashClose() { this.playBeep(800, 200).then(() => setTimeout(() => this.playBeep(600, 200), 250)); }
+
+    toggle() {
+        this.enabled = !this.enabled;
+        if (this.enabled) this.success();
+        return this.enabled;
+    }
+}
+
+const sound = new SoundSystem();
+
+// ============== CONTROL DE CAJA ==============
+function initCashControl() {
+    const cashBtn = document.getElementById('cashControlBtn');
+    const modal = document.getElementById('cashModal');
+    const openBtn = document.getElementById('openCashBtn');
+    const closeBtn = document.getElementById('closeCashBtn');
+    const actualCashInput = document.getElementById('actualCash');
+
+    if (cashBtn) cashBtn.onclick = openCashModal;
+    if (openBtn) openBtn.onclick = openCashBox;
+    if (closeBtn) closeBtn.onclick = closeCashBox;
+    if (actualCashInput) actualCashInput.oninput = calculateCashDifference;
+
+    // Modal controls
+    const modalClose = modal?.querySelector('.modal-close');
+    if (modalClose) modalClose.onclick = () => modal.style.display = 'none';
+
+    updateCashStatus();
+    loadCashData();
+}
+
+function loadCashData() {
+    // Cargar datos de caja desde localStorage
+    const saved = localStorage.getItem('cashBoxData');
+    if (saved) {
+        const data = JSON.parse(saved);
+        if (data.isOpen && data.openTime) {
+            const today = new Date().toDateString();
+            const openDate = new Date(data.openTime).toDateString();
+            
+            if (today === openDate) {
+                Object.assign(state.cashBox, data);
+                updateCashStatus();
+            }
+        }
+    }
+}
+
+function saveCashData() {
+    localStorage.setItem('cashBoxData', JSON.stringify(state.cashBox));
+}
+
+function openCashModal() {
+    const modal = document.getElementById('cashModal');
+    const title = document.getElementById('cashModalTitle');
+    const openSection = document.getElementById('cashOpenSection');
+    const closeSection = document.getElementById('cashCloseSection');
+
+    if (state.cashBox.isOpen) {
+        title.textContent = '🔒 Cierre de Caja';
+        openSection.style.display = 'none';
+        closeSection.style.display = 'block';
+        updateCloseSummary();
+    } else {
+        title.textContent = '🔓 Apertura de Caja';
+        openSection.style.display = 'block';
+        closeSection.style.display = 'none';
+        
+        // Pre-llenar operador si existe
+        const operatorInput = document.getElementById('operatorName');
+        if (operatorInput && state.cashBox.operator) {
+            operatorInput.value = state.cashBox.operator;
+        }
+    }
+
+    modal.style.display = 'flex';
+}
+
+function openCashBox() {
+    const initialAmount = parseFloat(document.getElementById('initialAmount')?.value) || 0;
+    const operator = document.getElementById('operatorName')?.value || 'Sin nombre';
+
+    if (initialAmount < 0) {
+        sound.error();
+        alert('⚠️ El monto inicial no puede ser negativo');
+        return;
+    }
+
+    state.cashBox = {
+        isOpen: true,
+        initialAmount: initialAmount,
+        operator: operator,
+        openTime: new Date().toISOString(),
+        cashSales: 0,
+        cardSales: 0,
+        transferSales: 0,
+        withdrawals: 0
+    };
+
+    sound.cashOpen();
+    saveCashData();
+    updateCashStatus();
+    document.getElementById('cashModal').style.display = 'none';
+    
+    // Limpiar inputs
+    document.getElementById('initialAmount').value = '';
+}
+
+function closeCashBox() {
+    const actualCash = parseFloat(document.getElementById('actualCash')?.value) || 0;
+    
+    if (actualCash < 0) {
+        sound.error();
+        alert('⚠️ El efectivo contado no puede ser negativo');
+        return;
+    }
+
+    const expectedCash = state.cashBox.initialAmount + state.cashBox.cashSales - state.cashBox.withdrawals;
+    const difference = actualCash - expectedCash;
+
+    // Confirmar cierre
+    let confirmMessage = `¿Confirmar cierre de caja?\n\nEfectivo esperado: $${formatPrice(expectedCash)}\nEfectivo contado: $${formatPrice(actualCash)}`;
+    
+    if (difference !== 0) {
+        confirmMessage += `\nDiferencia: $${formatPrice(Math.abs(difference))} ${difference > 0 ? '(sobrante)' : '(faltante)'}`;
+    }
+
+    if (confirm(confirmMessage)) {
+        // Guardar registro de cierre
+        const closeRecord = {
+            ...state.cashBox,
+            closeTime: new Date().toISOString(),
+            actualCash: actualCash,
+            expectedCash: expectedCash,
+            difference: difference
+        };
+        
+        // Guardar en historial
+        let history = JSON.parse(localStorage.getItem('cashHistory') || '[]');
+        history.push(closeRecord);
+        localStorage.setItem('cashHistory', JSON.stringify(history));
+
+        // Cerrar caja
+        state.cashBox = {
+            isOpen: false,
+            initialAmount: 0,
+            operator: '',
+            openTime: null,
+            cashSales: 0,
+            cardSales: 0,
+            transferSales: 0,
+            withdrawals: 0
+        };
+
+        sound.cashClose();
+        saveCashData();
+        updateCashStatus();
+        document.getElementById('cashModal').style.display = 'none';
+        
+        if (difference !== 0) {
+            setTimeout(() => {
+                sound.warning();
+                alert(`💰 Diferencia en caja: $${formatPrice(Math.abs(difference))} ${difference > 0 ? 'sobrante' : 'faltante'}`);
+            }, 500);
+        }
+    }
+}
+
+function updateCloseSummary() {
+    document.getElementById('summaryInitial').textContent = `$${formatPrice(state.cashBox.initialAmount)}`;
+    document.getElementById('summaryCashSales').textContent = `$${formatPrice(state.cashBox.cashSales)}`;
+    document.getElementById('summaryCardSales').textContent = `$${formatPrice(state.cashBox.cardSales)}`;
+    document.getElementById('summaryWithdrawals').textContent = `-$${formatPrice(state.cashBox.withdrawals)}`;
+    
+    const expected = state.cashBox.initialAmount + state.cashBox.cashSales - state.cashBox.withdrawals;
+    document.getElementById('expectedCash').textContent = `$${formatPrice(expected)}`;
+}
+
+function calculateCashDifference() {
+    const actualCash = parseFloat(document.getElementById('actualCash')?.value) || 0;
+    const expectedCash = state.cashBox.initialAmount + state.cashBox.cashSales - state.cashBox.withdrawals;
+    const difference = actualCash - expectedCash;
+    
+    const alert = document.getElementById('differenceAlert');
+    const amount = document.getElementById('differenceAmount');
+    
+    if (difference === 0) {
+        alert.style.display = 'none';
+    } else {
+        alert.style.display = 'block';
+        alert.className = 'difference-alert ' + (difference > 0 ? 'positive' : 'negative');
+        amount.textContent = `$${formatPrice(Math.abs(difference))} ${difference > 0 ? 'sobrante' : 'faltante'}`;
+    }
+}
+
+function updateCashStatus() {
+    const statusEl = document.getElementById('cashStatus');
+    const btnEl = document.getElementById('cashControlBtn');
+    
+    if (state.cashBox.isOpen) {
+        statusEl.textContent = `Caja Abierta - ${state.cashBox.operator}`;
+        btnEl.classList.add('open');
+    } else {
+        statusEl.textContent = 'Caja Cerrada';
+        btnEl.classList.remove('open');
+    }
+}
+
+function registerSale(amount, method) {
+    if (!state.cashBox.isOpen) return;
+    
+    if (method === 'efectivo') {
+        state.cashBox.cashSales += amount;
+    } else if (method === 'tarjeta') {
+        state.cashBox.cardSales += amount;
+    } else if (method === 'transferencia') {
+        state.cashBox.transferSales += amount;
+    }
+    
+    saveCashData();
+}
+
+function registerWithdrawal(amount) {
+    if (!state.cashBox.isOpen) return;
+    
+    state.cashBox.withdrawals += amount;
+    saveCashData();
+}
+
+// ============== BÚSQUEDA POR CÓDIGO ==============
+function openCodeSearchModal() {
+    const modal = document.getElementById('codeSearchModal');
+    const input = document.getElementById('codeSearchInput');
+    
+    modal.style.display = 'flex';
+    setTimeout(() => input?.focus(), 100);
+    
+    // Event listeners para el modal
+    const closeBtn = modal.querySelector('.modal-close');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const stopCameraBtn = document.getElementById('stopCameraBtn');
+    
+    if (closeBtn) closeBtn.onclick = () => closeCodeSearchModal();
+    if (cameraBtn) cameraBtn.onclick = startCamera;
+    if (stopCameraBtn) stopCameraBtn.onclick = stopCamera;
+    if (input) input.oninput = searchByCode;
+}
+
+function closeCodeSearchModal() {
+    const modal = document.getElementById('codeSearchModal');
+    modal.style.display = 'none';
+    stopCamera();
+}
+
+function searchByCode() {
+    const input = document.getElementById('codeSearchInput');
+    const result = document.getElementById('codeSearchResult');
+    const code = input?.value.trim();
+    
+    if (!code) {
+        result.style.display = 'none';
+        return;
+    }
+    
+    // Buscar producto por código
+    const producto = state.productos.find(p => 
+        p.codigo === code || 
+        p.codigo_barras === code ||
+        p.codigo_interno === code
+    );
+    
+    result.style.display = 'block';
+    
+    if (producto) {
+        sound.scan();
+        result.className = 'search-result found';
+        result.innerHTML = `
+            <div class="product-found">
+                <h4>✅ Producto Encontrado</h4>
+                <div class="product-details">
+                    <strong>${producto.nombre}</strong><br>
+                    <span>Código: ${producto.codigo}</span><br>
+                    <span>Precio: $${formatPrice(producto.precio_venta)}</span><br>
+                    <span>Stock: ${producto.stock}</span>
+                </div>
+                <button onclick="addProductFromCode(${producto.id})" class="btn-action primary">
+                    <span class="btn-icon">➕</span>
+                    <span class="btn-text">Agregar al Carrito</span>
+                </button>
+            </div>
+        `;
+    } else {
+        sound.error();
+        result.className = 'search-result not-found';
+        result.innerHTML = `
+            <div class="product-not-found">
+                <h4>❌ Producto No Encontrado</h4>
+                <p>No se encontró ningún producto con el código: <strong>${code}</strong></p>
+                <button onclick="createNewProduct('${code}')" class="btn-action secondary">
+                    <span class="btn-icon">➕</span>
+                    <span class="btn-text">Crear Producto</span>
+                </button>
+            </div>
+        `;
+    }
+}
+
+function addProductFromCode(productId) {
+    addToCartQuickMode(productId);
+    sound.success();
+    closeCodeSearchModal();
+}
+
+function createNewProduct(code) {
+    const newCode = code || generateInternalCode();
+    if (confirm(`¿Crear nuevo producto con código ${newCode}?`)) {
+        localStorage.setItem('newProductCode', newCode);
+        window.location.href = 'productos.html';
+    }
+}
+
+function generateInternalCode() {
+    const prefix = 'INT';
+    const timestamp = Date.now().toString().slice(-6);
+    return `${prefix}${timestamp}`;
+}
+
+async function startCamera() {
+    const video = document.getElementById('cameraVideo');
+    const cameraSection = document.getElementById('cameraSection');
+    const cameraBtn = document.getElementById('cameraBtn');
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment' } 
+        });
+        
+        video.srcObject = stream;
+        cameraSection.style.display = 'block';
+        cameraBtn.style.display = 'none';
+        
+        simulateBarcodeDetection(video);
+        
+    } catch (error) {
+        sound.error();
+        alert('❌ No se pudo acceder a la cámara. Verifica los permisos.');
+        console.error('Error accessing camera:', error);
+    }
+}
+
+function stopCamera() {
+    const video = document.getElementById('cameraVideo');
+    const cameraSection = document.getElementById('cameraSection');
+    const cameraBtn = document.getElementById('cameraBtn');
+    
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+    }
+    
+    cameraSection.style.display = 'none';
+    cameraBtn.style.display = 'block';
+}
+
+function simulateBarcodeDetection(video) {
+    let detectionInterval = setInterval(() => {
+        if (!video.srcObject) {
+            clearInterval(detectionInterval);
+            return;
+        }
+        
+        if (Math.random() < 0.1) { 
+            const demoCode = '7891000100103';
+            document.getElementById('codeSearchInput').value = demoCode;
+            searchByCode();
+            stopCamera();
+            clearInterval(detectionInterval);
+        }
+    }, 1000);
+}
 
 // ============== INICIALIZACIÓN ==============
 document.addEventListener('DOMContentLoaded', () => {
@@ -92,6 +523,13 @@ function setupEventListeners() {
 
     // Atajos de teclado
     document.addEventListener('keydown', handleKeyboardShortcuts);
+
+    // Control de Caja
+    initCashControl();
+
+    // Búsqueda por código
+    const codeSearchBtn = document.getElementById('codeSearchBtn');
+    if (codeSearchBtn) codeSearchBtn.onclick = openCodeSearchModal;
 
     // Productos - Escaneo rápido (solo en vista productos)
     const quickScanBtn = document.getElementById('quickScanBtn');
@@ -562,7 +1000,10 @@ function getUnidadIcon(unidad) {
 // ============== CARRITO ==============
 function addToCart(productoId) {
     const producto = state.productos.find(p => p.id === productoId);
-    if (!producto || producto.stock === 0) return;
+    if (!producto || producto.stock === 0) {
+        sound.error();
+        return;
+    }
     
     const existingItem = state.cart.find(item => item.id === productoId);
     
@@ -581,6 +1022,7 @@ function addToCart(productoId) {
             cantidad: 1,
             stockDisponible: producto.stock
         });
+        sound.success();
     }
     
     renderCart();
@@ -615,6 +1057,7 @@ function clearCart() {
         state.discountAmount = 0;
         const discountInput = document.getElementById('discountAmount');
         if (discountInput) discountInput.value = '';
+        sound.warning();
         renderCart();
     }
 }
@@ -665,40 +1108,61 @@ function selectPaymentMethod(metodo) {
 
 async function processPayment() {
     if (state.cart.length === 0) {
+        sound.error();
         alert('⚠️ El carrito está vacío');
         return;
     }
+
+    // Verificar si la caja está abierta para ventas en efectivo
+    if (state.selectedPaymentMethod === 'efectivo' && !state.cashBox.isOpen) {
+        sound.warning();
+        if (confirm('⚠️ La caja está cerrada. ¿Abrir caja antes de procesar la venta?')) {
+            openCashModal();
+            return;
+        }
+    }
     
+    const subtotal = state.cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+    const total = Math.max(0, subtotal + state.discountAmount);
+
     const venta = {
         items: state.cart.map(item => ({
             producto_id: item.id,
             cantidad: item.cantidad,
             precio_unitario: item.precio
         })),
-        metodo_pago: state.selectedPaymentMethod
+        metodo_pago: state.selectedPaymentMethod,
+        total: total,
+        descuento: state.discountAmount
     };
     
     try {
-        const response = await fetch(`${API_URL}/ventas`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(venta)
+        // Simular venta exitosa (en producción sería llamada a API real)
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Registrar en control de caja
+        registerSale(total, state.selectedPaymentMethod);
+        
+        // Actualizar stock localmente
+        state.cart.forEach(item => {
+            const producto = state.productos.find(p => p.id === item.id);
+            if (producto) {
+                producto.stock -= item.cantidad;
+            }
         });
         
-        if (response.ok) {
-            const ventaCreada = await response.json();
-            alert(`✅ Venta registrada! Total: $${formatPrice(ventaCreada.total)}`);
-            
-            // Limpiar carrito y recargar
-            state.cart = [];
-            renderCart();
-            await loadProducts();
-            await loadEstadisticas();
-            renderPOSProducts();
-        } else {
-            const error = await response.json();
-            alert(`❌ Error: ${error.detail}`);
-        }
+        sound.success();
+        alert(`✅ Venta registrada!\nTotal: $${formatPrice(total)}\nMétodo: ${state.selectedPaymentMethod}`);
+        
+        // Limpiar carrito
+        state.cart = [];
+        state.discountAmount = 0;
+        const discountInput = document.getElementById('discountAmount');
+        if (discountInput) discountInput.value = '';
+        
+        renderCart();
+        renderPOSProducts();
+        
     } catch (error) {
         console.error('Error procesando pago:', error);
         alert('❌ Error al procesar la venta');

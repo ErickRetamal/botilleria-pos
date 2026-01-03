@@ -423,6 +423,7 @@ body {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    justify-content: start;
     gap: 1rem;
     overflow-y: auto;
     padding: 1rem;
@@ -461,6 +462,7 @@ body {
     overflow: hidden;
     height: auto;
     min-height: 240px;
+    max-width: 220px;
     box-shadow: var(--shadow-sm);
 }
 
@@ -1815,6 +1817,246 @@ body.quick-mode-active .products-grid .product-card-pos::after {
 
 /* ===== FIN MODO VENTA RÁPIDA ===== */
 
+/* ===== CONTROL DE CAJA ===== */
+
+.cash-control {
+    margin-left: 1rem;
+    border-left: 1px solid var(--border-color);
+    padding-left: 1rem;
+}
+
+.cash-control-btn {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    border: 1px solid #f87171;
+    border-radius: 6px;
+    color: #dc2626;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cash-control-btn.open {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border-color: #34d399;
+    color: #047857;
+}
+
+.cash-control-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cash-icon {
+    font-size: 14px;
+}
+
+/* Modal de Caja */
+.cash-modal {
+    max-width: 500px;
+    width: 90%;
+}
+
+.cash-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.cash-form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.cash-form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--input-background);
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.cash-form-group input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.cash-form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.cash-summary {
+    background: var(--background-soft);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.cash-summary h3 {
+    margin: 0 0 1rem 0;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.summary-grid {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-item.expected {
+    border-top: 2px solid var(--accent-color);
+    padding-top: 0.75rem;
+    font-weight: 600;
+}
+
+.summary-item .label {
+    color: var(--text-secondary);
+}
+
+.summary-item .negative {
+    color: #dc2626;
+}
+
+.cash-count {
+    background: var(--background-soft);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.cash-count h3 {
+    margin: 0 0 1rem 0;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.difference-alert {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    color: #92400e;
+}
+
+.difference-alert.positive {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border-color: #34d399;
+    color: #047857;
+}
+
+.difference-alert.negative {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    border-color: #f87171;
+    color: #dc2626;
+}
+
+.alert-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-icon {
+    font-size: 16px;
+}
+
+.alert-text {
+    font-size: 12px;
+}
+
+/* ===== BÚSQUEDA POR CÓDIGO ===== */
+
+.search-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.search-input {
+    flex: 1;
+}
+
+.code-search-btn {
+    padding: 0.7rem;
+    min-width: auto;
+    border-radius: 6px;
+}
+
+.code-modal {
+    max-width: 400px;
+    width: 90%;
+}
+
+.code-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.code-input-group input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--input-background);
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.search-result {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--background-soft);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+.search-result.found {
+    border-color: #34d399;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+}
+
+.search-result.not-found {
+    border-color: #f87171;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+}
+
+#cameraVideo {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 6px;
+    margin: 1rem 0;
+}
+
+/* ===== FIN GESTIÓN DE CÓDIGOS ===== */
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1200px) {
     .pos-container,
@@ -1896,6 +2138,7 @@ body.quick-mode-active .products-grid .product-card-pos::after {
     
     .product-card-pos {
         min-height: 180px;
+        max-width: 160px;
     }
     
     .product-image {
@@ -1958,6 +2201,7 @@ body.quick-mode-active .products-grid .product-card-pos::after {
     
     .product-card-pos {
         min-height: 160px;
+        max-width: none;
     }
     
     .product-image {
