@@ -1453,6 +1453,13 @@ body {
     color: var(--success);
 }
 
+.form-hint {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+    font-style: italic;
+}
+
 .btn-large {
     padding: 1rem 2rem;
     font-size: 1rem;

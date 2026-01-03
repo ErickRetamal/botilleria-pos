@@ -77,14 +77,8 @@
                         
                         <!-- Filtros adicionales en selects compactos -->
                         <div class="filter-selects">
-                            <select id="litrosFilter" class="compact-select">
-                                <option value="">💧 Volumen</option>
-                                <option value="0.33">330ml</option>
-                                <option value="0.5">500ml</option>
-                                <option value="0.75">750ml</option>
-                                <option value="1">1L</option>
-                                <option value="1.5">1.5L</option>
-                                <option value="2">2L</option>
+                            <select id="unidadFilter" class="compact-select">
+                                <option value="">⚖️ Unidad</option>
                             </select>
                             <select id="marcaFilter" class="compact-select">
                                 <option value="">🏭 Marca</option>
@@ -256,8 +250,30 @@
 
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label>Volumen (Litros)</label>
+                                        <label>Cantidad</label>
+                                        <input type="number" id="cantidad" step="0.01" min="0" placeholder="500">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Unidad</label>
+                                        <select id="unidadMedida">
+                                            <option value="">Seleccionar...</option>
+                                            <option value="ml">💧 Mililitros (ml)</option>
+                                            <option value="L">💧 Litros (L)</option>
+                                            <option value="cc">💧 Centímetros cúbicos (cc)</option>
+                                            <option value="g">⚖️ Gramos (g)</option>
+                                            <option value="kg">⚖️ Kilogramos (kg)</option>
+                                            <option value="oz">⚖️ Onzas (oz)</option>
+                                            <option value="unidades">📎 Unidades</option>
+                                            <option value="paquetes">📦 Paquetes</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Volumen (Litros) - Legacy</label>
                                         <input type="number" id="litros" step="0.01" min="0" placeholder="0.33">
+                                        <small class="form-hint">Solo para productos líquidos existentes</small>
                                     </div>
                                     <div class="form-group">
                                         <label>URL Imagen</label>

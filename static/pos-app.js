@@ -4,7 +4,7 @@ const state = {
     cart: [],
     retiroCart: [],
     selectedCategory: '',
-    selectedLitros: '',
+    selectedUnidad: '',
     selectedMarca: '',
     selectedPaymentMethod: 'efectivo',
     editingProductId: null,
@@ -37,8 +37,8 @@ function setupEventListeners() {
         }
     });
     
-    document.getElementById('litrosFilter').addEventListener('change', (e) => {
-        state.selectedLitros = e.target.value;
+    document.getElementById('unidadFilter').addEventListener('change', (e) => {
+        state.selectedUnidad = e.target.value;
         renderPOSProducts();
     });
     document.getElementById('marcaFilter').addEventListener('change', (e) => {
@@ -150,6 +150,7 @@ async function loadInitialData() {
         loadEstadisticas()
     ]);
     populateMarcasFilter();
+    populateUnidadesFilter();
     renderPOSProducts();
 }
 
@@ -261,9 +262,9 @@ function renderPOSProducts(searchTerm = '') {
         filtered = filtered.filter(p => p.categoria === state.selectedCategory);
     }
     
-    // Filtrar por litros
-    if (state.selectedLitros) {
-        filtered = filtered.filter(p => p.litros && parseFloat(p.litros) === parseFloat(state.selectedLitros));
+    // Filtrar por unidad de medida
+    if (state.selectedUnidad) {
+        filtered = filtered.filter(p => p.unidad_medida === state.selectedUnidad);
     }
     
     // Filtrar por marca
@@ -303,7 +304,14 @@ function renderPOSProducts(searchTerm = '') {
         
         const metaInfo = [];
         if (producto.marca) metaInfo.push(`<span class="product-badge">🏭 ${producto.marca}</span>`);
-        if (producto.litros) metaInfo.push(`<span class="product-badge">💧 ${producto.litros}L</span>`);
+        
+        // Mostrar cantidad y unidad de medida si existen, sino mostrar litros legacy
+        if (producto.cantidad && producto.unidad_medida) {
+            const unidadIcon = getUnidadIcon(producto.unidad_medida);
+            metaInfo.push(`<span class="product-badge">${unidadIcon} ${producto.cantidad}${producto.unidad_medida}</span>`);
+        } else if (producto.litros) {
+            metaInfo.push(`<span class="product-badge">💧 ${producto.litros}L</span>`);
+        }
         
         return `
             <div class="product-card-pos ${outOfStock ? 'out-of-stock' : ''}" 
@@ -329,8 +337,35 @@ function populateMarcasFilter() {
     )].sort();
     
     const select = document.getElementById('marcaFilter');
-    select.innerHTML = '<option value="">Todas las marcas</option>' +
-        marcas.map(marca => `<option value="${marca}">${marca}</option>`).join('');
+    if (select) {
+        select.innerHTML = '<option value="">🏭 Marca</option>' +
+            marcas.map(marca => `<option value="${marca}">${marca}</option>`).join('');
+    }
+}
+
+function populateUnidadesFilter() {
+    const unidades = [...new Set(state.productos
+        .filter(p => p.unidad_medida)
+        .map(p => p.unidad_medida)
+    )].sort();
+    
+    const select = document.getElementById('unidadFilter');
+    if (select) {
+        select.innerHTML = '<option value="">⚖️ Unidad</option>' +
+            unidades.map(unidad => {
+                const icon = getUnidadIcon(unidad);
+                return `<option value="${unidad}">${icon} ${unidad}</option>`;
+            }).join('');
+    }
+}
+
+function getUnidadIcon(unidad) {
+    const icons = {
+        'ml': '💧', 'L': '💧', 'cc': '💧',
+        'g': '⚖️', 'kg': '⚖️', 'oz': '⚖️',
+        'unidades': '🔢', 'paquetes': '📦'
+    };
+    return icons[unidad] || '📏';
 }
 
 // ============== CARRITO ==============
@@ -775,6 +810,8 @@ async function handleProductSubmit(e) {
         stock_minimo: parseInt(document.getElementById('stockMinimo').value) || 5,
         categoria: document.getElementById('categoria').value || null,
         marca: document.getElementById('marca').value || null,
+        cantidad: parseFloat(document.getElementById('cantidad').value) || null,
+        unidad_medida: document.getElementById('unidadMedida').value || null,
         litros: parseFloat(document.getElementById('litros').value) || null,
         imagen_url: document.getElementById('imagen_url').value || null,
         activo: true
@@ -818,21 +855,35 @@ async function editProduct(id) {
         const producto = await response.json();
         
         state.editingProductId = id;
-        document.getElementById('formTitle').textContent = 'Editar Producto';
-        document.getElementById('codigo').value = producto.codigo;
-        document.getElementById('nombre').value = producto.nombre;
-        document.getElementById('descripcion').value = producto.descripcion || '';
-        document.getElementById('precioCompra').value = producto.precio_compra;
-        document.getElementById('precioVenta').value = producto.precio_venta;
-        document.getElementById('stock').value = producto.stock;
-        document.getElementById('stockMinimo').value = producto.stock_minimo;
-        document.getElementById('categoria').value = producto.categoria || '';
-        document.getElementById('marca').value = producto.marca || '';
-        document.getElementById('litros').value = producto.litros || '';
-        document.getElementById('imagen_url').value = producto.imagen_url || '';
+        const formTitle = document.getElementById('formTitle');
+        if (formTitle) formTitle.textContent = 'Editar Producto';
+        
+        // Llenar campos básicos
+        const campos = {
+            'codigo': producto.codigo,
+            'nombre': producto.nombre,
+            'descripcion': producto.descripcion || '',
+            'precioCompra': producto.precio_compra,
+            'precioVenta': producto.precio_venta,
+            'stock': producto.stock,
+            'stockMinimo': producto.stock_minimo,
+            'categoria': producto.categoria || '',
+            'marca': producto.marca || '',
+            'litros': producto.litros || '',
+            'imagen_url': producto.imagen_url || '',
+            'cantidad': producto.cantidad || '',
+            'unidadMedida': producto.unidad_medida || ''
+        };
+        
+        // Llenar todos los campos de forma segura
+        Object.keys(campos).forEach(campo => {
+            const elemento = document.getElementById(campo);
+            if (elemento) elemento.value = campos[campo];
+        });
         
         showProductForm();
-        document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+        const productForm = document.getElementById('productForm');
+        if (productForm) productForm.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
         console.error('Error:', error);
         alert('❌ Error al cargar el producto');

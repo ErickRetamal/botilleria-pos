@@ -22,7 +22,14 @@ class Producto(Base):
     # Categoría y atributos
     categoria = Column(String(100), nullable=True, index=True)
     marca = Column(String(100), nullable=True, index=True)
+    
+    # Sistema de medidas mejorado
+    cantidad = Column(Float, nullable=True)  # 500, 1.5, 250, etc.
+    unidad_medida = Column(String(20), nullable=True)  # ml, L, g, kg, cc, oz, unidades
+    
+    # Campo legacy para compatibilidad
     litros = Column(Float, nullable=True)
+    
     imagen_url = Column(String(500), nullable=True)
     
     # Estado
