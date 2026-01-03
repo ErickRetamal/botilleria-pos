@@ -224,6 +224,7 @@ body {
     grid-template-rows: 1fr;
     gap: 0.75rem;
     height: calc(100vh - 50px);
+    max-height: calc(100vh - 50px);
     padding: 0.75rem;
     overflow: hidden;
     box-sizing: border-box;
@@ -632,15 +633,17 @@ body {
     box-shadow: var(--shadow);
     border: 1px solid var(--border-light);
     height: 100%;
-    max-height: 100%;
+    max-height: calc(100vh - 100px);
+    min-height: calc(100vh - 100px);
     overflow: hidden;
     box-sizing: border-box;
+    position: relative;
 }
 
 .cart-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 0.75rem;
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border-light);
     flex-shrink: 0;
@@ -650,7 +653,7 @@ body {
 }
 
 .cart-items {
-    flex: 1;
+    flex: 1 1 0;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 0.5rem 0.75rem;
@@ -660,8 +663,9 @@ body {
     scrollbar-width: thin;
     scrollbar-color: var(--primary-light) var(--gray-50);
     min-height: 0;
-    max-height: none;
+    max-height: 100%;
     box-sizing: border-box;
+    height: 1px;
 }
 
 .cart-footer {
@@ -679,6 +683,15 @@ body {
     color: var(--text);
     font-weight: 700;
     letter-spacing: -0.02em;
+    margin: 0;
+    text-align: center;
+}
+
+.header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 .btn-clear {
@@ -2358,7 +2371,7 @@ body.quick-mode-active .products-grid .product-card-pos::after {
     }
     
     .payment-methods {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
     }
     
     .payment-btn {
@@ -3185,7 +3198,7 @@ body.quick-mode-active .products-grid .product-card-pos::after {
 .payment-methods {
     display: grid;
     gap: 0.4rem;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
 }
 
 .payment-btn {
