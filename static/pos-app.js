@@ -172,7 +172,12 @@ async function loadInitialData() {
         
         populateMarcasFilter();
         populateUnidadesFilter();
-        renderPOSProducts();
+        
+        // Solo renderizar productos POS si estamos en la página POS
+        const posGrid = document.getElementById('posProductsGrid');
+        if (posGrid) {
+            renderPOSProducts();
+        }
         
         console.log('✅ Datos iniciales cargados correctamente');
     } catch (error) {
@@ -191,14 +196,6 @@ async function loadProducts() {
             // El API devuelve diferentes formatos dependiendo del endpoint
             state.productos = data.productos || data || [];
             console.log('✅ Productos cargados:', state.productos.length);
-            
-            // Refrescar filtros después de cargar productos
-            if (typeof populateMarcasFilter === 'function') {
-                populateMarcasFilter();
-            }
-            if (typeof populateUnidadesFilter === 'function') {
-                populateUnidadesFilter();
-            }
         } else {
             throw new Error('Error en la respuesta del servidor');
         }
@@ -307,6 +304,7 @@ function filterByCategory(categoria) {
 
 function renderPOSProducts(searchTerm = '') {
     const grid = document.getElementById('posProductsGrid');
+    if (!grid) return; // Exit if element doesn't exist
     
     let filtered = state.productos.filter(p => p.activo);
     
@@ -395,8 +393,7 @@ function populateMarcasFilter() {
         
         const select = document.getElementById('marcaFilter');
         if (!select) {
-            console.error('❌ No se encontró el elemento marcaFilter');
-            return;
+            return; // Silently return if element doesn't exist
         }
         
         select.innerHTML = '<option value="">🏭 Marca</option>' +
@@ -420,8 +417,7 @@ function populateUnidadesFilter() {
         
         const select = document.getElementById('unidadFilter');
         if (!select) {
-            console.error('❌ No se encontró el elemento unidadFilter');
-            return;
+            return; // Silently return if element doesn't exist
         }
         
         select.innerHTML = '<option value="">⚖️ Unidad</option>' +
