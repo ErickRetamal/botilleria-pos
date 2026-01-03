@@ -6,4 +6,4 @@ python-dotenv==1.0.0
 pydantic==2.5.3
 pydantic-settings==2.1.0
 PyMySQL==1.1.0
-cryptography==41.0.8  # Required for MySQL caching_sha2_password authentication
+cryptography==43.0.3  # Required for MySQL caching_sha2_password authentication
