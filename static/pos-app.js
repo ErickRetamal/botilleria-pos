@@ -1439,6 +1439,14 @@ function initReportesModule() {
         periodoFilter.addEventListener('change', handlePeriodoChange);
     }
     
+    const metodoFilter = document.getElementById('metodoFilter');
+    if (metodoFilter) {
+        metodoFilter.addEventListener('change', () => {
+            reportesData.filtros.metodo = metodoFilter.value;
+            aplicarFiltrosReporte();
+        });
+    }
+    
     const aplicarFiltros = document.getElementById('aplicarFiltros');
     if (aplicarFiltros) {
         aplicarFiltros.addEventListener('click', aplicarFiltrosReporte);
@@ -1448,6 +1456,14 @@ function initReportesModule() {
     if (limpiarFiltros) {
         limpiarFiltros.addEventListener('click', limpiarFiltrosReporte);
     }
+    
+    const searchVentas = document.getElementById('searchVentas');
+    if (searchVentas) {
+        searchVentas.addEventListener('input', debounce(filtrarVentasEnTabla, 300));
+    }
+    
+    // Inicializar filtros con fechas por defecto
+    actualizarFechasPorPeriodo();
     
     // Cargar datos iniciales
     loadReportesData();
@@ -1484,19 +1500,41 @@ function switchReportTab(tabName) {
 }
 
 function handlePeriodoChange() {
-    const periodo = document.getElementById('periodoFilter').value;
+    const periodoSelect = document.getElementById('periodoFilter');
     const fechasDiv = document.getElementById('fechasPersonalizadas');
+    
+    if (!periodoSelect || !fechasDiv) return;
+    
+    const periodo = periodoSelect.value;
     
     if (periodo === 'personalizado') {
         fechasDiv.style.display = 'flex';
         fechasDiv.style.gap = '1rem';
         fechasDiv.style.alignItems = 'center';
+        
+        // Establecer fechas por defecto para el modo personalizado
+        const hoy = new Date();
+        const hace7dias = new Date();
+        hace7dias.setDate(hace7dias.getDate() - 7);
+        
+        const fechaDesdeInput = document.getElementById('fechaDesde');
+        const fechaHastaInput = document.getElementById('fechaHasta');
+        
+        if (fechaDesdeInput && !fechaDesdeInput.value) {
+            fechaDesdeInput.value = hace7dias.toISOString().split('T')[0];
+        }
+        if (fechaHastaInput && !fechaHastaInput.value) {
+            fechaHastaInput.value = hoy.toISOString().split('T')[0];
+        }
     } else {
         fechasDiv.style.display = 'none';
     }
     
     reportesData.filtros.periodo = periodo;
     actualizarFechasPorPeriodo();
+    
+    // Aplicar filtros automáticamente cuando cambia el período
+    setTimeout(aplicarFiltrosReporte, 100);
 }
 
 function actualizarFechasPorPeriodo() {
@@ -1529,12 +1567,21 @@ function actualizarFechasPorPeriodo() {
 }
 
 function aplicarFiltrosReporte() {
-    const metodo = document.getElementById('metodoFilter').value;
-    reportesData.filtros.metodo = metodo;
+    const metodoFilter = document.getElementById('metodoFilter');
+    const fechaDesdeInput = document.getElementById('fechaDesde');
+    const fechaHastaInput = document.getElementById('fechaHasta');
+    
+    if (metodoFilter) {
+        reportesData.filtros.metodo = metodoFilter.value;
+    }
     
     if (reportesData.filtros.periodo === 'personalizado') {
-        reportesData.filtros.fechaDesde = document.getElementById('fechaDesde').value;
-        reportesData.filtros.fechaHasta = document.getElementById('fechaHasta').value;
+        if (fechaDesdeInput && fechaDesdeInput.value) {
+            reportesData.filtros.fechaDesde = fechaDesdeInput.value;
+        }
+        if (fechaHastaInput && fechaHastaInput.value) {
+            reportesData.filtros.fechaHasta = fechaHastaInput.value;
+        }
     }
     
     loadReportesData();
@@ -1542,14 +1589,72 @@ function aplicarFiltrosReporte() {
     renderReportTabs();
     
     console.log('🔍 Filtros aplicados:', reportesData.filtros);
+    
+    // Mostrar notificación de filtros aplicados
+    mostrarNotificacionFiltros();
+}
+
+function mostrarNotificacionFiltros() {
+    const filtrosActivos = [];
+    
+    if (reportesData.filtros.periodo !== 'hoy') {
+        filtrosActivos.push(`Período: ${reportesData.filtros.periodo}`);
+    }
+    
+    if (reportesData.filtros.metodo) {
+        filtrosActivos.push(`Método: ${reportesData.filtros.metodo}`);
+    }
+    
+    if (reportesData.filtros.fechaDesde && reportesData.filtros.fechaHasta) {
+        filtrosActivos.push(`Desde: ${reportesData.filtros.fechaDesde} hasta ${reportesData.filtros.fechaHasta}`);
+    }
+    
+    if (filtrosActivos.length > 0) {
+        console.log('✅ Filtros activos:', filtrosActivos.join(', '));
+    }
+}
+
+function filtrarVentasEnTabla() {
+    const searchInput = document.getElementById('searchVentas');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.toLowerCase();
+    const tbody = document.getElementById('ventasTable');
+    if (!tbody) return;
+    
+    const rows = tbody.getElementsByTagName('tr');
+    
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let shouldShow = false;
+        
+        for (let j = 0; j < cells.length; j++) {
+            const cellText = cells[j].textContent || cells[j].innerText;
+            if (cellText.toLowerCase().includes(searchTerm)) {
+                shouldShow = true;
+                break;
+            }
+        }
+        
+        row.style.display = shouldShow ? '' : 'none';
+    }
 }
 
 function limpiarFiltrosReporte() {
-    document.getElementById('periodoFilter').value = 'hoy';
-    document.getElementById('metodoFilter').value = '';
-    document.getElementById('fechaDesde').value = '';
-    document.getElementById('fechaHasta').value = '';
-    document.getElementById('fechasPersonalizadas').style.display = 'none';
+    const periodoFilter = document.getElementById('periodoFilter');
+    const metodoFilter = document.getElementById('metodoFilter');
+    const fechaDesde = document.getElementById('fechaDesde');
+    const fechaHasta = document.getElementById('fechaHasta');
+    const fechasDiv = document.getElementById('fechasPersonalizadas');
+    const searchVentas = document.getElementById('searchVentas');
+    
+    if (periodoFilter) periodoFilter.value = 'hoy';
+    if (metodoFilter) metodoFilter.value = '';
+    if (fechaDesde) fechaDesde.value = '';
+    if (fechaHasta) fechaHasta.value = '';
+    if (fechasDiv) fechasDiv.style.display = 'none';
+    if (searchVentas) searchVentas.value = '';
     
     reportesData.filtros = {
         periodo: 'hoy',
@@ -1560,11 +1665,20 @@ function limpiarFiltrosReporte() {
     
     actualizarFechasPorPeriodo();
     aplicarFiltrosReporte();
+    
+    console.log('🗑️ Filtros limpiados');
 }
 
 function loadReportesData() {
-    // Generar datos de prueba para ventas
+    // Generar datos de prueba para ventas con diferentes fechas
+    const hoy = new Date();
+    const ayer = new Date(hoy);
+    ayer.setDate(ayer.getDate() - 1);
+    const antesDeAyer = new Date(hoy);
+    antesDeAyer.setDate(antesDeAyer.getDate() - 2);
+    
     const ventasEjemplo = [
+        // Ventas de hoy
         {
             id: 'V001',
             fecha: new Date().toISOString(),
@@ -1597,20 +1711,70 @@ function loadReportesData() {
                 {nombre: 'Coca Cola 500ml', cantidad: 2, precio: 1000},
                 {nombre: 'Papas Lays Original', cantidad: 1, precio: 1300}
             ]
+        },
+        // Ventas de ayer
+        {
+            id: 'V004',
+            fecha: ayer.toISOString(),
+            total: 22000,
+            metodo: 'efectivo',
+            productos: [
+                {nombre: 'Pisco Capel 35°', cantidad: 2, precio: 6500},
+                {nombre: 'Cerveza Cristal 350ml', cantidad: 8, precio: 1200}
+            ]
+        },
+        {
+            id: 'V005',
+            fecha: new Date(ayer.getTime() + 7200000).toISOString(),
+            total: 13800,
+            metodo: 'tarjeta',
+            productos: [
+                {nombre: 'Vino Casillero del Diablo', cantidad: 2, precio: 5500},
+                {nombre: 'Papas Lays Original', cantidad: 2, precio: 1300},
+                {nombre: 'Coca Cola 500ml', cantidad: 1, precio: 1000}
+            ]
+        },
+        // Ventas de hace 2 días
+        {
+            id: 'V006',
+            fecha: antesDeAyer.toISOString(),
+            total: 19500,
+            metodo: 'transferencia',
+            productos: [
+                {nombre: 'Pisco Capel 35°', cantidad: 1, precio: 6500},
+                {nombre: 'Vino Casillero del Diablo', cantidad: 1, precio: 5500},
+                {nombre: 'Cerveza Cristal 350ml', cantidad: 6, precio: 1200},
+                {nombre: 'Coca Cola 500ml', cantidad: 1, precio: 1000}
+            ]
         }
     ];
     
     // Filtrar según los filtros activos
     reportesData.ventas = ventasEjemplo.filter(venta => {
         const fechaVenta = new Date(venta.fecha).toISOString().split('T')[0];
-        const enRangoFecha = (!reportesData.filtros.fechaDesde || fechaVenta >= reportesData.filtros.fechaDesde) &&
-                            (!reportesData.filtros.fechaHasta || fechaVenta <= reportesData.filtros.fechaHasta);
+        
+        // Verificar rango de fechas
+        let enRangoFecha = true;
+        if (reportesData.filtros.fechaDesde && reportesData.filtros.fechaHasta) {
+            enRangoFecha = fechaVenta >= reportesData.filtros.fechaDesde && 
+                          fechaVenta <= reportesData.filtros.fechaHasta;
+        }
+        
+        // Verificar método de pago
         const coincideMetodo = !reportesData.filtros.metodo || venta.metodo === reportesData.filtros.metodo;
         
         return enRangoFecha && coincideMetodo;
     });
     
     console.log(`📊 Cargadas ${reportesData.ventas.length} ventas con filtros aplicados`);
+    
+    // Log detalle de filtros aplicados
+    if (reportesData.filtros.fechaDesde && reportesData.filtros.fechaHasta) {
+        console.log(`📅 Rango de fechas: ${reportesData.filtros.fechaDesde} - ${reportesData.filtros.fechaHasta}`);
+    }
+    if (reportesData.filtros.metodo) {
+        console.log(`💳 Método filtrado: ${reportesData.filtros.metodo}`);
+    }
 }
 
 function updateReportesStats() {
