@@ -79,6 +79,10 @@ const sound = new SoundSystem();
 // ============== CONTROL DE CAJA ==============
 function initCashControl() {
     const cashBtn = document.getElementById('cashControlBtn');
+    
+    // Solo inicializar si estamos en el POS (donde existe el botón)
+    if (!cashBtn) return;
+    
     const modal = document.getElementById('cashModal');
     const openBtn = document.getElementById('openCashBtn');
     const closeBtn = document.getElementById('closeCashBtn');
@@ -264,6 +268,9 @@ function calculateCashDifference() {
 function updateCashStatus() {
     const statusEl = document.getElementById('cashStatus');
     const btnEl = document.getElementById('cashControlBtn');
+    
+    // Solo actualizar si los elementos existen (solo en POS)
+    if (!statusEl || !btnEl) return;
     
     if (state.cashBox.isOpen) {
         statusEl.textContent = `Caja Abierta - ${state.cashBox.operator}`;
@@ -897,41 +904,25 @@ function renderPOSProducts(searchTerm = '') {
         const outOfStock = producto.stock === 0;
         const lowStock = producto.stock > 0 && producto.stock < producto.stock_minimo;
         
-        // Determinar emoji por categoría si no hay imagen
-        let emoji = '📦';
-        if (producto.categoria === 'Cervezas') emoji = '🍺';
-        else if (producto.categoria === 'Vinos') emoji = '🍷';
-        else if (producto.categoria === 'Licores') emoji = '🥃';
-        else if (producto.categoria === 'Bebidas') emoji = '🥤';
-        else if (producto.categoria === 'Snacks') emoji = '🍿';
-        
-        const imagenHtml = producto.imagen_url 
-            ? `<img src="${producto.imagen_url}" alt="${producto.nombre}" onerror="this.parentElement.innerHTML='${emoji}'">`
-            : emoji;
-        
-        const metaInfo = [];
-        if (producto.marca) metaInfo.push(`<span class="product-badge">🏭 ${producto.marca}</span>`);
-        
-        // Mostrar cantidad y unidad de medida si existen, sino mostrar litros legacy
-        if (producto.cantidad && producto.unidad_medida) {
-            const unidadIcon = getUnidadIcon(producto.unidad_medida);
-            metaInfo.push(`<span class="product-badge">${unidadIcon} ${producto.cantidad}${producto.unidad_medida}</span>`);
-        } else if (producto.litros) {
-            metaInfo.push(`<span class="product-badge">💧 ${producto.litros}L</span>`);
-        }
-        
+        // Formato de lista compacta
         return `
             <div class="product-card-pos ${outOfStock ? 'out-of-stock' : ''}" 
                  onclick="${outOfStock ? '' : `addToCartQuickMode(${producto.id})`}">
-                <div class="product-image">${imagenHtml}</div>
-                <div class="product-info">
-                    <div class="product-name">${producto.nombre}</div>
-                    ${metaInfo.length > 0 ? `<div class="product-meta">${metaInfo.join('')}</div>` : ''}
-                    <div class="product-price">$${formatPrice(producto.precio_venta)}</div>
-                    <div class="product-stock ${lowStock ? 'low' : ''}">
-                        ${outOfStock ? '❌ Sin stock' : `Stock: ${producto.stock}`}
+                <div class="product-info-list">
+                    <div class="product-name-list">${producto.nombre}</div>
+                    <div class="product-details-list">
+                        <span class="product-code-list">${producto.codigo}</span>
+                        ${producto.marca ? `<span>🏭 ${producto.marca}</span>` : ''}
+                        ${producto.cantidad && producto.unidad_medida ? 
+                            `<span>${getUnidadIcon(producto.unidad_medida)} ${producto.cantidad}${producto.unidad_medida}</span>` :
+                            producto.litros ? `<span>💧 ${producto.litros}L</span>` : ''
+                        }
+                        <span class="product-stock-list ${lowStock ? 'low' : ''}">
+                            ${outOfStock ? '❌ Sin stock' : `Stock: ${producto.stock}`}
+                        </span>
                     </div>
                 </div>
+                <div class="product-price-list">$${formatPrice(producto.precio_venta)}</div>
             </div>
         `;
     }).join('');
