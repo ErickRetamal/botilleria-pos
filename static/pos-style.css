@@ -630,9 +630,7 @@ body {
     flex-direction: column;
     box-shadow: var(--shadow);
     border: 1px solid var(--border-light);
-    height: calc(100vh - 120px);
-    max-height: 500px;
-    min-height: 400px;
+    height: calc(100vh - 50px);
     overflow: hidden;
     position: sticky;
     top: 20px;
@@ -653,6 +651,7 @@ body {
 .cart-items {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 0.5rem 0.75rem;
     display: flex;
     flex-direction: column;
@@ -660,6 +659,7 @@ body {
     scrollbar-width: thin;
     scrollbar-color: var(--primary-light) var(--gray-50);
     min-height: 0;
+    max-height: none;
 }
 
 .cart-footer {
@@ -894,6 +894,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .summary-row {
@@ -928,6 +929,7 @@ body {
     flex-direction: column;
     gap: 0.75rem;
     margin-top: 0.5rem;
+    flex-shrink: 0;
 }
 
 .payment-section label {
@@ -1759,8 +1761,9 @@ body {
 .discount-section {
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     background: var(--background-soft);
+    flex-shrink: 0;
 }
 
 .discount-header {
