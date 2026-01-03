@@ -47,32 +47,35 @@ function setupEventListeners() {
     });
 
     // Carrito
-    document.getElementById('clearCart').addEventListener('click', clearCart);
-    document.getElementById('processPayment').addEventListener('click', processPayment);
+    const clearCartBtn = document.getElementById('clearCart');
+    const processPaymentBtn = document.getElementById('processPayment');
+    if (clearCartBtn) clearCartBtn.addEventListener('click', clearCart);
+    if (processPaymentBtn) processPaymentBtn.addEventListener('click', processPayment);
     
     // Retiros
-    document.getElementById('retiroSearchInput').addEventListener('input', debounce(filterRetiroProducts, 300));
-    document.getElementById('clearRetiroCart').addEventListener('click', clearRetiroCart);
-    document.getElementById('processRetiro').addEventListener('click', processRetiro);
+    const retiroSearchInput = document.getElementById('retiroSearchInput');
+    const clearRetiroCartBtn = document.getElementById('clearRetiroCart');
+    const processRetiroBtn = document.getElementById('processRetiro');
+    if (retiroSearchInput) retiroSearchInput.addEventListener('input', debounce(filterRetiroProducts, 300));
+    if (clearRetiroCartBtn) clearRetiroCartBtn.addEventListener('click', clearRetiroCart);
+    if (processRetiroBtn) processRetiroBtn.addEventListener('click', processRetiro);
     
     // Métodos de pago
     document.querySelectorAll('.payment-btn').forEach(btn => {
         btn.addEventListener('click', () => selectPaymentMethod(btn.dataset.metodo));
     });
 
-    // Productos - Escaneo rápido
-    document.getElementById('quickScanInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleQuickScan();
-        }
-    });
-    document.getElementById('quickScanBtn').addEventListener('click', handleQuickScan);
+    // Productos - Escaneo rápido (solo en vista productos)
+    const quickScanBtn = document.getElementById('quickScanBtn');
+    if (quickScanBtn) quickScanBtn.addEventListener('click', handleQuickScan);
 
     // Productos - Formulario
-    document.getElementById('btnNuevoProducto').addEventListener('click', showProductForm);
-    document.getElementById('productoForm').addEventListener('submit', handleProductSubmit);
-    document.getElementById('cancelForm').addEventListener('click', hideProductForm);
+    const btnNuevoProducto = document.getElementById('btnNuevoProducto');
+    const productoForm = document.getElementById('productoForm');
+    const cancelForm = document.getElementById('cancelForm');
+    if (btnNuevoProducto) btnNuevoProducto.addEventListener('click', showProductForm);
+    if (productoForm) productoForm.addEventListener('submit', handleProductSubmit);
+    if (cancelForm) cancelForm.addEventListener('click', hideProductForm);
     
     // Nuevos elementos del diseño mejorado
     const closeSidebar = document.getElementById('closeSidebar');
@@ -86,6 +89,13 @@ function setupEventListeners() {
         productSearch.addEventListener('input', (e) => {
             // Implementar búsqueda en tiempo real si es necesario
             console.log('Buscando:', e.target.value);
+        });
+        // Agregar funcionalidad de Enter para escaneo rápido
+        productSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleQuickScan();
+            }
         });
     }
     
@@ -111,8 +121,10 @@ function setupEventListeners() {
     }
 
     // Stock form
-    document.getElementById('addStockForm').addEventListener('submit', handleAddStock);
-    document.getElementById('stockQuantity').addEventListener('input', updateFinalStock);
+    const addStockForm = document.getElementById('addStockForm');
+    const stockQuantity = document.getElementById('stockQuantity');
+    if (addStockForm) addStockForm.addEventListener('submit', handleAddStock);
+    if (stockQuantity) stockQuantity.addEventListener('input', updateFinalStock);
 }
 
 function setupKeyboardShortcuts() {
@@ -201,13 +213,19 @@ function switchView(viewName) {
     // Cargar datos específicos
     if (viewName === 'productos') {
         loadProductsTable();
-        setTimeout(() => document.getElementById('quickScanInput').focus(), 100);
+        setTimeout(() => {
+            const searchInput = document.getElementById('productSearchInput');
+            if (searchInput) searchInput.focus();
+        }, 100);
     } else if (viewName === 'ventas') {
         loadVentas();
     } else if (viewName === 'retiros') {
         renderRetiroProducts();
         loadRetiros();
-        setTimeout(() => document.getElementById('retiroSearchInput').focus(), 100);
+        setTimeout(() => {
+            const retiroInput = document.getElementById('retiroSearchInput');
+            if (retiroInput) retiroInput.focus();
+        }, 100);
     }
 }
 
@@ -462,6 +480,57 @@ async function processPayment() {
 
 // ============== PRODUCTOS - ESCANEO RÁPIDO ==============
 async function handleQuickScan() {
+    const scanInput = document.getElementById('productSearchInput');
+    if (!scanInput) {
+        alert('⚠️ Input de búsqueda no encontrado');
+        return;
+    }
+    
+    const codigo = scanInput.value.trim();
+    
+    if (!codigo) {
+        alert('⚠️ Ingresa un código de producto');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/productos?limit=500`);
+        const productos = await response.json();
+        const producto = productos.find(p => p.codigo.toLowerCase() === codigo.toLowerCase() && p.activo);
+        
+        if (producto) {
+            // Si estamos en vista productos, editar el producto
+            if (state.currentView === 'productos') {
+                editProduct(producto.id);
+            } else {
+                // Si estamos en POS, buscar el producto
+                const posSearchInput = document.getElementById('posSearchInput');
+                if (posSearchInput) {
+                    posSearchInput.value = codigo;
+                    filterPOSProducts();
+                }
+            }
+        } else {
+            // Producto no encontrado - ir a formulario de nuevo producto
+            if (state.currentView === 'productos') {
+                showProductForm();
+                const codigoInput = document.getElementById('codigo');
+                const nombreInput = document.getElementById('nombre');
+                if (codigoInput) codigoInput.value = codigo;
+                if (nombreInput) nombreInput.focus();
+            } else {
+                alert('❌ Producto no encontrado');
+            }
+        }
+        
+        // Limpiar input
+        scanInput.value = '';
+    } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al buscar el producto');
+    }
+}
+async function handleQuickScan() {
     const codigo = document.getElementById('quickScanInput').value.trim();
     
     if (!codigo) {
@@ -659,22 +728,31 @@ function filterProducts() {
 function showProductForm() {
     // En el nuevo diseño, el formulario siempre está visible en el sidebar
     // Solo necesitamos scroll al sidebar y limpiar el formulario
-    document.getElementById('formTitle').textContent = '➕ Nuevo Producto';
-    document.getElementById('productoForm').reset();
-    document.getElementById('codigo').readOnly = false;
+    const formTitle = document.getElementById('formTitle');
+    const productoForm = document.getElementById('productoForm');
+    const codigoInput = document.getElementById('codigo');
+    
+    if (formTitle) formTitle.textContent = '➕ Nuevo Producto';
+    if (productoForm) productoForm.reset();
+    if (codigoInput) {
+        codigoInput.readOnly = false;
+        codigoInput.focus();
+    }
     state.editingProductId = null;
-    document.getElementById('codigo').focus();
     
     // Scroll al formulario si es mobile
     if (window.innerWidth <= 968) {
-        document.querySelector('.productos-sidebar').scrollIntoView({ behavior: 'smooth' });
+        const sidebar = document.querySelector('.productos-sidebar');
+        if (sidebar) sidebar.scrollIntoView({ behavior: 'smooth' });
     }
 }
 
 function hideProductForm() {
     // En el nuevo diseño no ocultamos el formulario, solo lo limpiamos
-    document.getElementById('productoForm').reset();
-    document.getElementById('codigo').readOnly = false;
+    const productoForm = document.getElementById('productoForm');
+    const codigoInput = document.getElementById('codigo');
+    if (productoForm) productoForm.reset();
+    if (codigoInput) codigoInput.readOnly = false;
     state.editingProductId = null;
     
     // Focus en búsqueda si existe
