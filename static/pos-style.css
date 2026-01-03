@@ -1346,6 +1346,218 @@ body {
     line-height: 1.5;
 }
 
+/* ===== RETIROS - ESTILOS ESPECÍFICOS ===== */
+
+/* Panel de Alertas */
+.retiro-alerts {
+    margin: 1rem 0;
+    padding: 0;
+}
+
+.alert-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    color: #92400e;
+    font-size: 13px;
+    box-shadow: 0 2px 4px rgba(251, 146, 60, 0.1);
+}
+
+.alert-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.alert-content h4 {
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+    font-size: 13px;
+    color: #92400e;
+}
+
+.alert-content p {
+    margin: 0;
+    font-size: 12px;
+    color: #a16207;
+}
+
+.stats-retiro {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.stat-mini {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: var(--background-soft);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    min-width: 120px;
+    text-align: center;
+}
+
+.stat-mini .stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.stat-mini .stat-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+/* Motivo y Observaciones */
+.retiro-motivo,
+.retiro-observaciones {
+    margin: 0.75rem 0;
+}
+
+.retiro-motivo label,
+.retiro-observaciones label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 0.4rem;
+}
+
+.motivo-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--input-background);
+    color: var(--text-color);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.motivo-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.retiro-observaciones textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--input-background);
+    color: var(--text-color);
+    font-size: 12px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.retiro-observaciones textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.impact-amount {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+/* Historial mejorado */
+.historial-section {
+    margin-top: 2rem;
+    background: var(--background-soft);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.historial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.historial-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.historial-filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--background-color);
+    color: var(--text-color);
+    font-size: 12px;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.historial-container {
+    overflow-x: auto;
+}
+
+.historial-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.historial-table th,
+.historial-table td {
+    padding: 0.6rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.historial-table th {
+    background: var(--background-color);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.historial-table td {
+    color: var(--text-color);
+    vertical-align: top;
+}
+
+.historial-table tbody tr:hover {
+    background: var(--background-soft);
+}
+
+/* ===== FIN RETIROS ===== */
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1200px) {
     .pos-container,
@@ -2058,6 +2270,32 @@ body {
         padding: 0.875rem 1.25rem;
         font-size: var(--text-sm);
         min-height: 44px;
+    }
+    
+    /* Retiros responsive */
+    .stats-retiro {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .stat-mini {
+        flex-direction: row;
+        justify-content: space-between;
+        min-width: unset;
+    }
+    
+    .historial-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .historial-filters {
+        justify-content: stretch;
+    }
+    
+    .filter-select {
+        flex: 1;
+        min-width: unset;
     }
     
     .btn-icon {

@@ -371,8 +371,8 @@ function switchView(viewName) {
     } else if (viewName === 'ventas') {
         loadVentas();
     } else if (viewName === 'retiros') {
+        initRetirosModule();
         renderRetiroProducts();
-        loadRetiros();
         setTimeout(() => {
             const retiroInput = document.getElementById('retiroSearchInput');
             if (retiroInput) retiroInput.focus();
@@ -1174,6 +1174,294 @@ function renderVentasTable(ventas) {
 }
 
 // ============== RETIROS ==============
+
+// Variables globales para retiros
+const LIMITE_PERDIDAS_DIA = 150000; // $150k límite diario
+let historialRetiros = [];
+
+// Datos de prueba para retiros
+const testRetiros = [
+    {
+        id: 1,
+        fecha: new Date().toISOString(),
+        productos: [{nombre: 'Cerveza Corona 330ml', cantidad: 2, precio: 2800}],
+        motivo: 'consumo_interno',
+        observaciones: 'Consumo del personal',
+        total: 5600
+    },
+    {
+        id: 2,
+        fecha: new Date(Date.now() - 86400000).toISOString(),
+        productos: [{nombre: 'Vino Santa Rita 750ml', cantidad: 1, precio: 8500}],
+        motivo: 'perdida',
+        observaciones: 'Botella rota durante transporte',
+        total: 8500
+    }
+];
+
+function initRetirosModule() {
+    if (!historialRetiros.length) {
+        historialRetiros = [...testRetiros];
+    }
+    
+    updateRetirosStats();
+    checkAlertas();
+    renderHistorialRetiros();
+    bindRetirosEvents();
+}
+
+function bindRetirosEvents() {
+    const clearBtn = document.getElementById('clearRetiroCart');
+    const processBtn = document.getElementById('processRetiro');
+    const filtroMotivo = document.getElementById('filtroMotivo');
+    const filtroPeriodo = document.getElementById('filtroPeriodo');
+    
+    if (clearBtn) clearBtn.onclick = clearRetiroCart;
+    if (processBtn) processBtn.onclick = processRetiro;
+    if (filtroMotivo) filtroMotivo.onchange = renderHistorialRetiros;
+    if (filtroPeriodo) filtroPeriodo.onchange = renderHistorialRetiros;
+}
+
+function updateRetirosStats() {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    
+    const retirosHoy = historialRetiros.filter(r => 
+        new Date(r.fecha) >= hoy
+    );
+    
+    const perdidasHoy = retirosHoy.reduce((sum, r) => sum + r.total, 0);
+    const itemsHoy = retirosHoy.reduce((sum, r) => 
+        sum + r.productos.reduce((pSum, p) => pSum + p.cantidad, 0), 0
+    );
+    
+    // Calcular promedio semanal
+    const semanaAtras = new Date(hoy.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const retirosSemanales = historialRetiros.filter(r => 
+        new Date(r.fecha) >= semanaAtras
+    );
+    const promedioSemanal = retirosSemanales.length > 0 
+        ? retirosSemanales.reduce((sum, r) => sum + r.total, 0) / 7
+        : 0;
+    
+    // Actualizar DOM
+    const perdidasEl = document.getElementById('perdidasHoy');
+    const itemsEl = document.getElementById('itemsRetiradosHoy');
+    const promedioEl = document.getElementById('promedioSemanal');
+    
+    if (perdidasEl) perdidasEl.textContent = `$${formatPrice(perdidasHoy)}`;
+    if (itemsEl) itemsEl.textContent = itemsHoy.toString();
+    if (promedioEl) promedioEl.textContent = `$${formatPrice(promedioSemanal)}`;
+}
+
+function checkAlertas() {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    
+    const retirosHoy = historialRetiros.filter(r => 
+        new Date(r.fecha) >= hoy
+    );
+    
+    const perdidasHoy = retirosHoy.reduce((sum, r) => sum + r.total, 0);
+    const alertaCard = document.getElementById('alertaPerdidas');
+    const alertaMensaje = document.getElementById('alertaMensaje');
+    
+    if (perdidasHoy > LIMITE_PERDIDAS_DIA) {
+        if (alertaCard && alertaMensaje) {
+            alertaMensaje.textContent = `Las pérdidas de hoy ($${formatPrice(perdidasHoy)}) exceden el límite recomendado de $${formatPrice(LIMITE_PERDIDAS_DIA)}`;
+            alertaCard.style.display = 'flex';
+        }
+    } else if (alertaCard) {
+        alertaCard.style.display = 'none';
+    }
+}
+
+function processRetiro() {
+    if (state.retiroCart.length === 0) {
+        alert('⚠️ No hay productos en el carrito');
+        return;
+    }
+    
+    const motivo = document.getElementById('motivoRetiro')?.value || 'otro';
+    const observaciones = document.getElementById('observacionesRetiro')?.value || '';
+    
+    const nuevoRetiro = {
+        id: historialRetiros.length + 1,
+        fecha: new Date().toISOString(),
+        productos: state.retiroCart.map(item => ({
+            nombre: item.nombre,
+            cantidad: item.cantidad,
+            precio: item.precio
+        })),
+        motivo: motivo,
+        observaciones: observaciones,
+        total: state.retiroCart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0)
+    };
+    
+    // Actualizar stock
+    state.retiroCart.forEach(item => {
+        const producto = state.productos.find(p => p.id === item.id);
+        if (producto) {
+            producto.stock -= item.cantidad;
+        }
+    });
+    
+    historialRetiros.push(nuevoRetiro);
+    state.retiroCart = [];
+    
+    // Limpiar formulario
+    const motivoEl = document.getElementById('motivoRetiro');
+    const obsEl = document.getElementById('observacionesRetiro');
+    if (motivoEl) motivoEl.value = 'consumo_interno';
+    if (obsEl) obsEl.value = '';
+    
+    renderRetiroCart();
+    updateRetirosStats();
+    checkAlertas();
+    renderHistorialRetiros();
+    renderRetiroProducts();
+    
+    alert('✅ Retiro procesado correctamente');
+}
+
+function renderHistorialRetiros() {
+    const tbody = document.getElementById('historialRetiros');
+    if (!tbody) return;
+    
+    const filtroMotivo = document.getElementById('filtroMotivo')?.value || '';
+    const filtroPeriodo = document.getElementById('filtroPeriodo')?.value || 'hoy';
+    
+    let filtered = [...historialRetiros];
+    
+    // Filtrar por motivo
+    if (filtroMotivo) {
+        filtered = filtered.filter(r => r.motivo === filtroMotivo);
+    }
+    
+    // Filtrar por período
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    
+    if (filtroPeriodo === 'hoy') {
+        filtered = filtered.filter(r => new Date(r.fecha) >= hoy);
+    } else if (filtroPeriodo === 'semana') {
+        const semanaAtras = new Date(hoy.getTime() - 7 * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter(r => new Date(r.fecha) >= semanaAtras);
+    } else if (filtroPeriodo === 'mes') {
+        const mesAtras = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter(r => new Date(r.fecha) >= mesAtras);
+    }
+    
+    filtered.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No hay retiros para mostrar</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = filtered.map(retiro => {
+        const fecha = new Date(retiro.fecha);
+        const motivosMap = {
+            'consumo_interno': '🍺 Consumo Interno',
+            'perdida': '💔 Pérdida/Rotura',
+            'vencido': '📅 Vencido',
+            'deteriorado': '⚠️ Deteriorado',
+            'muestra': '🎁 Muestra',
+            'inventario': '📋 Ajuste',
+            'otro': '❓ Otro'
+        };
+        
+        const productosText = retiro.productos.map(p => 
+            `${p.nombre} (${p.cantidad})`
+        ).join(', ');
+        
+        return `
+            <tr>
+                <td>${fecha.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</td>
+                <td title="${productosText}">${retiro.productos.length === 1 ? productosText : `${retiro.productos.length} productos`}</td>
+                <td>${retiro.productos.reduce((sum, p) => sum + p.cantidad, 0)}</td>
+                <td>$${formatPrice(retiro.total)}</td>
+                <td>${motivosMap[retiro.motivo] || '❓ Otro'}</td>
+                <td title="${retiro.observaciones || 'Sin observaciones'}">${retiro.observaciones ? (retiro.observaciones.length > 30 ? retiro.observaciones.substring(0, 30) + '...' : retiro.observaciones) : '-'}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function clearRetiroCart() {
+    if (confirm('¿Estás seguro de limpiar el carrito?')) {
+        state.retiroCart = [];
+        renderRetiroCart();
+    }
+}
+
+function renderRetiroCart() {
+    const container = document.getElementById('retiroCartItems');
+    const itemCount = document.getElementById('retiroItemCount');
+    const total = document.getElementById('retiroTotal');
+    const impacto = document.getElementById('impactoPerdidas');
+    
+    if (!container) return;
+    
+    if (state.retiroCart.length === 0) {
+        container.innerHTML = '<div class="cart-empty">🛒 No hay productos para retirar</div>';
+        if (itemCount) itemCount.textContent = '0';
+        if (total) total.textContent = '$0';
+        if (impacto) impacto.textContent = '$0';
+        return;
+    }
+    
+    const totalAmount = state.retiroCart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+    const totalItems = state.retiroCart.reduce((sum, item) => sum + item.cantidad, 0);
+    
+    if (itemCount) itemCount.textContent = totalItems.toString();
+    if (total) total.textContent = `$${formatPrice(totalAmount)}`;
+    if (impacto) impacto.textContent = `$${formatPrice(totalAmount)}`;
+    
+    container.innerHTML = state.retiroCart.map(item => `
+        <div class="cart-item">
+            <div class="cart-item-info">
+                <div class="cart-item-name">${item.nombre}</div>
+                <div class="cart-item-price">$${formatPrice(item.precio)} c/u</div>
+            </div>
+            <div class="cart-item-controls">
+                <button onclick="updateRetiroQuantity(${item.id}, -1)" class="quantity-btn">-</button>
+                <span class="quantity">${item.cantidad}</span>
+                <button onclick="updateRetiroQuantity(${item.id}, 1)" class="quantity-btn">+</button>
+                <button onclick="removeFromRetiroCart(${item.id})" class="remove-btn">🗑️</button>
+            </div>
+            <div class="cart-item-total">$${formatPrice(item.precio * item.cantidad)}</div>
+        </div>
+    `).join('');
+}
+
+function updateRetiroQuantity(productoId, change) {
+    const item = state.retiroCart.find(i => i.id === productoId);
+    const producto = state.productos.find(p => p.id === productoId);
+    
+    if (!item || !producto) return;
+    
+    const newQuantity = item.cantidad + change;
+    
+    if (newQuantity <= 0) {
+        removeFromRetiroCart(productoId);
+        return;
+    }
+    
+    if (newQuantity > producto.stock) {
+        alert('⚠️ No hay suficiente stock');
+        return;
+    }
+    
+    item.cantidad = newQuantity;
+    renderRetiroCart();
+}
+
+function removeFromRetiroCart(productoId) {
+    state.retiroCart = state.retiroCart.filter(item => item.id !== productoId);
+    renderRetiroCart();
+}
+
 function filterRetiroProducts() {
     const searchTerm = document.getElementById('retiroSearchInput').value.toLowerCase();
     renderRetiroProducts(searchTerm);
