@@ -37,14 +37,28 @@ function setupEventListeners() {
         }
     });
     
-    document.getElementById('unidadFilter').addEventListener('change', (e) => {
-        state.selectedUnidad = e.target.value;
-        renderPOSProducts();
-    });
-    document.getElementById('marcaFilter').addEventListener('change', (e) => {
-        state.selectedMarca = e.target.value;
-        renderPOSProducts();
-    });
+    const unidadFilter = document.getElementById('unidadFilter');
+    const marcaFilter = document.getElementById('marcaFilter');
+    
+    if (unidadFilter) {
+        unidadFilter.addEventListener('change', (e) => {
+            console.log('Filtro de unidad cambiado a:', e.target.value);
+            state.selectedUnidad = e.target.value;
+            renderPOSProducts();
+        });
+    } else {
+        console.error('❌ No se encontró unidadFilter');
+    }
+    
+    if (marcaFilter) {
+        marcaFilter.addEventListener('change', (e) => {
+            console.log('Filtro de marca cambiado a:', e.target.value);
+            state.selectedMarca = e.target.value;
+            renderPOSProducts();
+        });
+    } else {
+        console.error('❌ No se encontró marcaFilter');
+    }
 
     // Carrito
     const clearCartBtn = document.getElementById('clearCart');
@@ -145,22 +159,49 @@ function setupKeyboardShortcuts() {
 }
 
 async function loadInitialData() {
-    await Promise.all([
-        loadProducts(),
-        loadEstadisticas()
-    ]);
-    populateMarcasFilter();
-    populateUnidadesFilter();
-    renderPOSProducts();
+    try {
+        console.log('🚀 Cargando datos iniciales...');
+        await Promise.all([
+            loadProducts(),
+            loadEstadisticas()
+        ]);
+        console.log('📦 Productos cargados:', state.productos.length);
+        
+        populateMarcasFilter();
+        populateUnidadesFilter();
+        renderPOSProducts();
+        
+        console.log('✅ Datos iniciales cargados correctamente');
+    } catch (error) {
+        console.error('❌ Error cargando datos iniciales:', error);
+    }
 }
 
 // ============== API CALLS ==============
 async function loadProducts() {
     try {
+        console.log('📦 Cargando productos...');
         const response = await fetch(`${API_URL}/productos?limit=500`);
-        state.productos = await response.json();
+        const data = await response.json();
+        
+        if (response.ok) {
+            // El API devuelve diferentes formatos dependiendo del endpoint
+            state.productos = data.productos || data || [];
+            console.log('✅ Productos cargados:', state.productos.length);
+            
+            // Refrescar filtros después de cargar productos
+            if (typeof populateMarcasFilter === 'function') {
+                populateMarcasFilter();
+            }
+            if (typeof populateUnidadesFilter === 'function') {
+                populateUnidadesFilter();
+            }
+        } else {
+            throw new Error('Error en la respuesta del servidor');
+        }
     } catch (error) {
-        console.error('Error cargando productos:', error);
+        console.error('❌ Error cargando productos:', error);
+        state.productos = [];
         alert('❌ Error al cargar productos');
     }
 }
@@ -331,31 +372,55 @@ function renderPOSProducts(searchTerm = '') {
 }
 
 function populateMarcasFilter() {
-    const marcas = [...new Set(state.productos
-        .filter(p => p.marca)
-        .map(p => p.marca)
-    )].sort();
-    
-    const select = document.getElementById('marcaFilter');
-    if (select) {
+    try {
+        console.log('Poblando filtro de marcas...');
+        const marcas = [...new Set(state.productos
+            .filter(p => p.marca && p.marca.trim() !== '')
+            .map(p => p.marca)
+        )].sort();
+        
+        console.log('Marcas encontradas:', marcas);
+        
+        const select = document.getElementById('marcaFilter');
+        if (!select) {
+            console.error('❌ No se encontró el elemento marcaFilter');
+            return;
+        }
+        
         select.innerHTML = '<option value="">🏭 Marca</option>' +
             marcas.map(marca => `<option value="${marca}">${marca}</option>`).join('');
+            
+        console.log('✅ Filtro de marcas poblado con', marcas.length, 'opciones');
+    } catch (error) {
+        console.error('❌ Error en populateMarcasFilter:', error);
     }
 }
 
 function populateUnidadesFilter() {
-    const unidades = [...new Set(state.productos
-        .filter(p => p.unidad_medida)
-        .map(p => p.unidad_medida)
-    )].sort();
-    
-    const select = document.getElementById('unidadFilter');
-    if (select) {
+    try {
+        console.log('Poblando filtro de unidades...');
+        const unidades = [...new Set(state.productos
+            .filter(p => p.unidad_medida)
+            .map(p => p.unidad_medida)
+        )].sort();
+        
+        console.log('Unidades encontradas:', unidades);
+        
+        const select = document.getElementById('unidadFilter');
+        if (!select) {
+            console.error('❌ No se encontró el elemento unidadFilter');
+            return;
+        }
+        
         select.innerHTML = '<option value="">⚖️ Unidad</option>' +
             unidades.map(unidad => {
                 const icon = getUnidadIcon(unidad);
                 return `<option value="${unidad}">${icon} ${unidad}</option>`;
             }).join('');
+            
+        console.log('✅ Filtro de unidades poblado con', unidades.length, 'opciones');
+    } catch (error) {
+        console.error('❌ Error en populateUnidadesFilter:', error);
     }
 }
 
@@ -851,22 +916,33 @@ async function handleProductSubmit(e) {
 
 async function editProduct(id) {
     try {
+        console.log('Editando producto ID:', id);
         const response = await fetch(`${API_URL}/productos/${id}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const producto = await response.json();
+        console.log('Producto cargado:', producto);
         
         state.editingProductId = id;
         const formTitle = document.getElementById('formTitle');
-        if (formTitle) formTitle.textContent = 'Editar Producto';
+        if (formTitle) {
+            formTitle.textContent = '✏️ Editar Producto';
+        } else {
+            console.warn('⚠️ No se encontró formTitle');
+        }
         
         // Llenar campos básicos
         const campos = {
-            'codigo': producto.codigo,
-            'nombre': producto.nombre,
+            'codigo': producto.codigo || '',
+            'nombre': producto.nombre || '',
             'descripcion': producto.descripcion || '',
-            'precioCompra': producto.precio_compra,
-            'precioVenta': producto.precio_venta,
-            'stock': producto.stock,
-            'stockMinimo': producto.stock_minimo,
+            'precioCompra': producto.precio_compra || '',
+            'precioVenta': producto.precio_venta || '',
+            'stock': producto.stock || '',
+            'stockMinimo': producto.stock_minimo || '',
             'categoria': producto.categoria || '',
             'marca': producto.marca || '',
             'litros': producto.litros || '',
@@ -878,15 +954,35 @@ async function editProduct(id) {
         // Llenar todos los campos de forma segura
         Object.keys(campos).forEach(campo => {
             const elemento = document.getElementById(campo);
-            if (elemento) elemento.value = campos[campo];
+            if (elemento) {
+                elemento.value = campos[campo];
+                console.log(`✅ Campo ${campo} = ${campos[campo]}`);
+            } else {
+                console.warn(`⚠️ No se encontró el elemento: ${campo}`);
+            }
         });
         
+        // Asegurar que el código no sea editable en modo edición
+        const codigoInput = document.getElementById('codigo');
+        if (codigoInput) {
+            codigoInput.readOnly = true;
+        }
+        
         showProductForm();
+        
+        // Scroll al formulario
         const productForm = document.getElementById('productForm');
-        if (productForm) productForm.scrollIntoView({ behavior: 'smooth' });
+        if (productForm) {
+            productForm.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            console.warn('⚠️ No se encontró productForm para scroll');
+        }
+        
+        console.log('✅ Producto cargado en formulario para edición');
+        
     } catch (error) {
-        console.error('Error:', error);
-        alert('❌ Error al cargar el producto');
+        console.error('❌ Error en editProduct:', error);
+        alert(`❌ Error al cargar el producto: ${error.message}`);
     }
 }
 
