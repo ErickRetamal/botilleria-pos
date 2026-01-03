@@ -130,28 +130,35 @@
 
             <!-- Panel de Carrito -->
             <aside class="cart-panel" role="complementary" aria-label="Carrito de compras">
-                <header class="cart-header">
+                <!-- Título del carrito -->
+                <div class="cart-title">
                     <h2>🛒 Carrito de Compra</h2>
-                    <div class="header-controls">
-                        <!-- Toggle Modo Rápido -->
-                        <div class="quick-mode-toggle">
-                            <input type="checkbox" id="quickModeToggle" class="toggle-checkbox">
-                            <label for="quickModeToggle" class="toggle-label">
-                                <span class="toggle-slider"></span>
-                                <span class="toggle-text">⚡ Rápido</span>
-                            </label>
-                        </div>
-                        <button id="clearCart" class="btn-action secondary" aria-label="Limpiar carrito">
-                            <span class="btn-icon">🗱️</span>
-                            <span class="btn-text">Limpiar</span>
-                        </button>
+                </div>
+                
+                <!-- Controles del carrito -->
+                <div class="cart-controls">
+                    <div class="quick-mode-toggle">
+                        <input type="checkbox" id="quickModeToggle" class="toggle-checkbox">
+                        <label for="quickModeToggle" class="toggle-label">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-text">⚡ Rápido</span>
+                        </label>
                     </div>
-                </header>
+                    <button id="clearCart" class="btn-action secondary" aria-label="Limpiar carrito">
+                        <span class="btn-icon">🗱️</span>
+                        <span class="btn-text">Limpiar</span>
+                    </button>
+                </div>
 
-                <div id="cartItems" class="cart-items" role="list" aria-label="Productos en el carrito"></div>
+                <!-- Container de productos con scroll -->
+                <div class="cart-products-container">
+                    <div id="cartItems" class="cart-items" role="list" aria-label="Productos en el carrito"></div>
+                </div>
 
-                <!-- Descuentos / Recargos -->
-                <div class="discount-section">
+                <!-- Sección fija inferior -->
+                <div class="cart-fixed-bottom">
+                    <!-- Descuentos / Recargos -->
+                    <div class="discount-section">
                     <div class="discount-header">
                         <span>🏷️ Descuentos / Recargos</span>
                         <button id="toggleDiscount" class="btn-toggle">
@@ -222,6 +229,7 @@
                     <span class="btn-icon">💰</span>
                     <span class="btn-text">Cobrar <span id="paymentTotal">$0</span></span>
                 </button>
+                </div>
             </aside>
         </div>
     </main>
