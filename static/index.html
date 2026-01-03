@@ -184,7 +184,10 @@
                 </button>
             </div>
         </div>
-        <div class="productos-layout">"
+        
+        <div class="productos-layout">
+            <!-- Panel Principal - Lista de Productos -->
+            <div class="productos-main">
 
                 <!-- Búsqueda y Filtros -->
                 <div class="productos-search">
@@ -399,15 +402,16 @@
 
     <!-- Vista: Retiros -->
     <div id="view-retiros" class="view">
+        <div class="module-header">
+            <div class="header-info">
+                <h2 class="module-title">📤 Gestión de Retiros</h2>
+                <p class="module-subtitle">Registra consumo interno y pérdidas de inventario</p>
+            </div>
+        </div>
+        
         <div class="retiro-container">
             <!-- Panel de Productos -->
             <div class="products-panel">
-                <div class="module-header">
-                    <div class="header-info">
-                        <h2 class="module-title">📤 Gestión de Retiros</h2>
-                        <p class="module-subtitle">Registra consumo interno y pérdidas de inventario</p>
-                    </div>
-                </div>
 
                 <div class="search-section">
                     <input 
@@ -454,52 +458,59 @@
                 </div>
             </div>
         </div>
-
-        <!-- Tabla de Retiros -->
-        <div class="content-container" style="margin-top: 2rem;">
-            <div class="module-header">
-                <div class="header-info">
-                    <h2 class="module-title">📋 Historial de Retiros</h2>
-                    <p class="module-subtitle">Revisa todos los retiros y consumos registrados</p>
-                </div>
-            </div>
-
+        
+        <!-- Sección de Historial de Retiros -->
+        <div class="content-container" style="margin-top: 1rem;">
             <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Fecha</th>
-                            <th>Pérdida</th>
-                        </tr>
-                    </thead>
-                    <tbody id="retirosTable"></tbody>
-                </table>
+                <div class="table-header">
+                    <h3>📋 Historial de Retiros</h3>
+                </div>
+                <div class="table-content">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Pérdida</th>
+                            </tr>
+                        </thead>
+                        <tbody id="retirosTable"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Vista: Ventas -->
     <div id="view-ventas" class="view">
+        <div class="module-header">
+            <div class="header-info">
+                <h2 class="module-title">📊 Historial de Ventas</h2>
+                <p class="module-subtitle">Consulta y analiza el historial de transacciones</p>
+            </div>
+        </div>
+        
         <div class="content-container">
-            <div class="module-header">
-                <div class="header-info">
-                    <h2 class="module-title">📊 Historial de Ventas</h2>
-                    <p class="module-subtitle">Consulta y analiza el historial de transacciones</p>
+            <div class="table-container">
+                <div class="table-content">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Método</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ventasTable"></tbody>
+                    </table>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Fecha</th>
-                            <th>Total</th>
-                            <th>Método</th>
-                            <th>Acciones</th>
-                        </tr>
-     !-- Modal de agregar stock -->
+    <!-- Modal de agregar stock -->
     <div id="addStockModal" class="modal">
         <div class="modal-content modal-small">
             <span class="modal-close" onclick="closeStockModal()">&times;</span>
@@ -523,13 +534,6 @@
                     <button type="button" class="btn-secondary" onclick="closeStockModal()">Cancelar</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <               </thead>
-                    <tbody id="ventasTable"></tbody>
-                </table>
-            </div>
         </div>
     </div>
 
