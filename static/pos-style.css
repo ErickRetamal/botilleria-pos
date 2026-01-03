@@ -228,6 +228,10 @@ body {
     padding: 0.75rem;
     overflow: hidden;
     box-sizing: border-box;
+    position: fixed;
+    top: 50px;
+    left: 0;
+    right: 0;
 }
 
 /* Panel de Productos */
@@ -641,12 +645,14 @@ body {
 /* Controles del carrito */
 .cart-controls {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border-light);
     flex-shrink: 0;
     background: var(--gray-50);
+    gap: 1rem;
 }
 
 /* Container de productos con scroll fijo */
@@ -683,7 +689,8 @@ body {
     flex-direction: column;
     box-shadow: var(--shadow);
     border: 1px solid var(--border-light);
-    height: calc(100vh - 100px);
+    height: 100%;
+    max-height: 100%;
     width: 100%;
     overflow: hidden;
     box-sizing: border-box;
