@@ -5,13 +5,19 @@ from config import get_settings
 
 settings = get_settings()
 
-# Crear engine de SQLAlchemy
+# Crear engine de SQLAlchemy (MySQL en Railway o SQLite local)
+database_url = settings.get_database_url()
+print(f"🔗 Conectando a: {database_url.split('@')[0]}@[HOST_HIDDEN]" if '@' in database_url else database_url)
+
 engine = create_engine(
-    settings.database_url,
-    connect_args={"check_same_thread": False} if "sqlite" in settings.database_url else {},
+    database_url,
     pool_pre_ping=True,
     pool_recycle=3600,
-    echo=settings.debug
+    pool_size=20 if 'mysql' in database_url else 1,
+    max_overflow=30 if 'mysql' in database_url else 0,
+    echo=settings.debug,
+    # Configuraciones específicas para SQLite si es necesario
+    connect_args={"check_same_thread": False} if "sqlite" in database_url else {},
 )
 
 # Session local
