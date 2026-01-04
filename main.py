@@ -129,6 +129,26 @@ def root():
         logger.exception("Root endpoint exception:")
         raise HTTPException(status_code=500, detail=f"Error serving page: {e}")
 
+@app.get("/pos.html")
+def pos_page():
+    """Servir página POS"""
+    return FileResponse("html/pos.html")
+
+@app.get("/productos.html")
+def productos_page():
+    """Servir página de productos"""
+    return FileResponse("html/productos.html")
+
+@app.get("/ventas.html")
+def ventas_page():
+    """Servir página de ventas"""
+    return FileResponse("html/ventas.html")
+
+@app.get("/retiros.html")
+def retiros_page():
+    """Servir página de retiros"""
+    return FileResponse("html/retiros.html")
+
 logger.info("✅ Main endpoints configured")
 
 # ============== RUTAS DE PRODUCTOS ==============
