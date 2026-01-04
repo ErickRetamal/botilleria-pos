@@ -149,6 +149,11 @@ def retiros_page():
     """Servir página de retiros"""
     return FileResponse("html/retiros.html")
 
+@app.get("/favicon.ico")
+def favicon():
+    """Servir favicon"""
+    return FileResponse("static/favicon.svg")
+
 logger.info("✅ Main endpoints configured")
 
 # ============== RUTAS DE PRODUCTOS ==============
