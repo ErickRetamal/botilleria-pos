@@ -1071,17 +1071,17 @@ function renderCart() {
     
     container.innerHTML = state.cart.map(item => `
         <div class="cart-item">
-            <div class="cart-item-header">
-                <div class="cart-item-name">${item.nombre}</div>
-                <button class="cart-item-remove" onclick="removeFromCart(${item.id})">×</button>
-            </div>
-            <div class="cart-item-controls">
-                <div class="quantity-controls">
-                    <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">−</button>
-                    <span class="quantity">${item.cantidad}</span>
-                    <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+            <div class="cart-item-info">
+                <div class="cart-item-details">
+                    <div class="cart-item-name">${item.nombre}</div>
+                    <div class="cart-item-price">$${formatPrice(item.precio * item.cantidad)}</div>
                 </div>
-                <div class="cart-item-price">$${formatPrice(item.precio * item.cantidad)}</div>
+            </div>
+            <div class="cart-item-actions">
+                <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">−</button>
+                <span class="quantity">${item.cantidad}</span>
+                <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                <button class="btn-remove" onclick="removeFromCart(${item.id})">×</button>
             </div>
         </div>
     `).join('');

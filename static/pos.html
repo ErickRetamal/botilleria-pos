@@ -159,76 +159,76 @@
                 <div class="cart-fixed-bottom">
                     <!-- Descuentos / Recargos -->
                     <div class="discount-section">
-                    <div class="discount-header">
-                        <span>🏷️ Descuentos / Recargos</span>
-                        <button id="toggleDiscount" class="btn-toggle">
-                            <span class="btn-icon">➕</span>
-                        </button>
-                    </div>
-                    <div class="discount-controls" id="discountControls" style="display: none;">
-                        <div class="discount-input-group">
-                            <input type="number" id="discountAmount" placeholder="0" step="100" min="-999999" max="999999">
-                            <label>Pesos CLP</label>
+                        <div class="discount-header">
+                            <span>🏷️ Descuentos / Recargos</span>
+                            <button id="toggleDiscount" class="btn-toggle">
+                                <span class="btn-icon">➕</span>
+                            </button>
                         </div>
-                        <div class="discount-buttons">
-                            <button onclick="applyQuickDiscount(-5000)" class="quick-btn discount">💰 -$5.000</button>
-                            <button onclick="applyQuickDiscount(-10000)" class="quick-btn discount">💰 -$10.000</button>
-                            <button onclick="applyQuickDiscount(2000)" class="quick-btn surcharge">📈 +$2.000</button>
-                            <button onclick="clearDiscount()" class="quick-btn clear">🗑 Limpiar</button>
+                        <div class="discount-controls" id="discountControls" style="display: none;">
+                            <div class="discount-input-group">
+                                <input type="number" id="discountAmount" placeholder="0" step="100" min="-999999" max="999999">
+                                <label>Pesos CLP</label>
+                            </div>
+                            <div class="discount-buttons">
+                                <button onclick="applyQuickDiscount(-5000)" class="quick-btn discount">💰 -$5.000</button>
+                                <button onclick="applyQuickDiscount(-10000)" class="quick-btn discount">💰 -$10.000</button>
+                                <button onclick="applyQuickDiscount(2000)" class="quick-btn surcharge">📈 +$2.000</button>
+                                <button onclick="clearDiscount()" class="quick-btn clear">🗑 Limpiar</button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <footer class="cart-summary" role="region" aria-label="Resumen de compra">
-                    <div class="summary-row">
-                        <span>Items:</span>
-                        <span id="cartItemCount" aria-live="polite">0</span>
-                    </div>
-                    <div class="summary-row subtotal">
-                        <span>Subtotal:</span>
-                        <span id="cartSubtotal" aria-live="polite">$0</span>
-                    </div>
-                    <div class="summary-row discount" id="discountRow" style="display: none;">
-                        <span id="discountLabel">Descuento:</span>
-                        <span id="discountDisplay" aria-live="polite">$0</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>TOTAL:</span>
-                        <span id="cartTotal" class="value" aria-live="assertive">$0</span>
-                    </div>
-                </footer>
+                    <footer class="cart-summary" role="region" aria-label="Resumen de compra">
+                        <div class="summary-row">
+                            <span>Items:</span>
+                            <span id="cartItemCount" aria-live="polite">0</span>
+                        </div>
+                        <div class="summary-row subtotal">
+                            <span>Subtotal:</span>
+                            <span id="cartSubtotal" aria-live="polite">$0</span>
+                        </div>
+                        <div class="summary-row discount" id="discountRow" style="display: none;">
+                            <span id="discountLabel">Descuento:</span>
+                            <span id="discountDisplay" aria-live="polite">$0</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>TOTAL:</span>
+                            <span id="cartTotal" class="value" aria-live="assertive">$0</span>
+                        </div>
+                    </footer>
 
-                <div class="payment-section">
-                    <label>💳 Método de Pago</label>
-                    <div class="payment-methods" role="radiogroup" aria-label="Seleccionar método de pago">
-                        <button class="payment-btn active" data-metodo="efectivo" role="radio" aria-checked="true">
-                            <span class="icon" aria-hidden="true">💵</span>
-                            <span class="payment-text">
-                                <span>Efectivo</span>
-                                <small class="keyboard-hint">F1</small>
-                            </span>
-                        </button>
-                        <button class="payment-btn" data-metodo="tarjeta" role="radio" aria-checked="false">
-                            <span class="icon" aria-hidden="true">💳</span>
-                            <span class="payment-text">
-                                <span>Tarjeta</span>
-                                <small class="keyboard-hint">F2</small>
-                            </span>
-                        </button>
-                        <button class="payment-btn" data-metodo="transferencia" role="radio" aria-checked="false">
-                            <span class="icon" aria-hidden="true">📱</span>
-                            <span class="payment-text">
-                                <span>Transferencia</span>
-                                <small class="keyboard-hint">F3</small>
-                            </span>
-                        </button>
+                    <div class="payment-section">
+                        <label>💳 Método de Pago</label>
+                        <div class="payment-methods" role="radiogroup" aria-label="Seleccionar método de pago">
+                            <button class="payment-btn active" data-metodo="efectivo" role="radio" aria-checked="true">
+                                <span class="icon" aria-hidden="true">💵</span>
+                                <span class="payment-text">
+                                    <span>Efectivo</span>
+                                    <small class="keyboard-hint">F1</small>
+                                </span>
+                            </button>
+                            <button class="payment-btn" data-metodo="tarjeta" role="radio" aria-checked="false">
+                                <span class="icon" aria-hidden="true">💳</span>
+                                <span class="payment-text">
+                                    <span>Tarjeta</span>
+                                    <small class="keyboard-hint">F2</small>
+                                </span>
+                            </button>
+                            <button class="payment-btn" data-metodo="transferencia" role="radio" aria-checked="false">
+                                <span class="icon" aria-hidden="true">📱</span>
+                                <span class="payment-text">
+                                    <span>Transferencia</span>
+                                    <small class="keyboard-hint">F3</small>
+                                </span>
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <button id="processPayment" class="btn-action primary" aria-label="Procesar venta" style="width: 100%; justify-content: center; margin-top: 1rem;">
-                    <span class="btn-icon">💰</span>
-                    <span class="btn-text">Cobrar <span id="paymentTotal">$0</span></span>
-                </button>
+                    <button id="processPayment" class="btn-action primary" aria-label="Procesar venta" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                        <span class="btn-icon">💰</span>
+                        <span class="btn-text">Cobrar <span id="paymentTotal">$0</span></span>
+                    </button>
                 </div>
             </aside>
         </div>
