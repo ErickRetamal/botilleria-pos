@@ -81,6 +81,7 @@ logger.info(f"✅ FastAPI initialized with title: {settings.app_name}")
 logger.info("Montando archivos estáticos...")
 try:
     app.mount("/static", StaticFiles(directory="static"), name="static")
+    app.mount("/html", StaticFiles(directory="html"), name="html")
     logger.info("✅ Static files mounted successfully")
 except Exception as static_error:
     logger.error(f"❌ Error mounting static files: {static_error}")
@@ -122,7 +123,7 @@ def root():
     """Servir la página principal"""
     logger.info("Root endpoint called")
     try:
-        return FileResponse("static/index.html")
+        return FileResponse("html/index.html")
     except Exception as e:
         logger.error(f"❌ Error serving index.html: {e}")
         logger.exception("Root endpoint exception:")

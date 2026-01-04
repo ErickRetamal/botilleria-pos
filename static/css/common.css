@@ -1,0 +1,513 @@
+/* ========== COMMON.CSS - Estilos Compartidos ========== */
+/* Variables CSS, reset, tipografía, navbar, modales, botones, forms */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ========== VARIABLES CSS ========== */
+:root {
+    /* Colors - Professional palette */
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
+    --success: #059669;
+    --success-light: #d1fae5;
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+    --warning: #d97706;
+    --warning-light: #fef3c7;
+    --info: #0891b2;
+    --info-light: #cffafe;
+    
+    /* Grays */
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+    
+    /* Semantic colors */
+    --background: var(--gray-50);
+    --surface: #ffffff;
+    --border: var(--gray-200);
+    --border-light: var(--gray-100);
+    --text: var(--gray-900);
+    --text-secondary: var(--gray-700);
+    --text-muted: var(--gray-500);
+    
+    /* Spacing & Layout */
+    --radius-sm: 8px;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    
+    /* Typography */
+    --text-xs: 0.875rem;
+    --text-sm: 1rem;
+    --text-base: 1.125rem;
+    --text-lg: 1.25rem;
+    --text-xl: 1.5rem;
+    --text-2xl: 1.875rem;
+    --text-3xl: 2.25rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    
+    /* Transitions */
+    --transition-fast: 150ms ease-in-out;
+    --transition: 200ms ease-in-out;
+    --transition-slow: 300ms ease-in-out;
+}
+
+/* ========== RESET ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+    height: 100vh;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.5;
+    font-weight: 400;
+    display: flex;
+    flex-direction: column;
+    letter-spacing: -0.005em;
+}
+
+/* ========== NAVBAR ========== */
+.navbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 50px;
+    flex-shrink: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow-sm);
+}
+
+.navbar-brand h1 {
+    font-size: 1.1rem;
+    color: var(--primary);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.navbar-menu {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--gray-100);
+    padding: 0.25rem;
+    border-radius: var(--radius-lg);
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    font-family: inherit;
+    text-decoration: none;
+    min-height: 32px;
+}
+
+.nav-btn:hover {
+    color: var(--text);
+    background: var(--gray-50);
+    transform: translateY(-1px);
+}
+
+.nav-btn.active {
+    background: var(--surface);
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+    font-weight: 700;
+}
+
+.nav-btn .icon {
+    font-size: 1.25rem;
+    opacity: 0.9;
+}
+
+.nav-btn.active .icon {
+    opacity: 1;
+}
+
+.navbar-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--success);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-value.warning {
+    color: var(--warning);
+}
+
+.stat-value.success {
+    color: var(--success);
+}
+
+/* ========== BOTONES ========== */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-family: inherit;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: var(--gray-200);
+    color: var(--text);
+}
+
+.btn-secondary:hover {
+    background: var(--gray-300);
+}
+
+.btn-action {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-action.secondary {
+    background: var(--gray-200);
+    color: var(--text);
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    font-size: 1.1rem;
+}
+
+.btn-icon:hover {
+    background: var(--gray-100);
+    transform: scale(1.1);
+}
+
+.btn-icon.edit:hover {
+    background: var(--info-light);
+    color: var(--info);
+}
+
+.btn-icon.delete:hover {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+/* ========== FORMS ========== */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all var(--transition);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    font-size: 0.975rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    outline: none;
+    transition: all var(--transition);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+}
+
+.search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.search-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* ========== BADGES ========== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+    white-space: nowrap;
+}
+
+.badge.success {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+.badge.warning {
+    background: var(--warning-light);
+    color: var(--warning);
+}
+
+.badge.danger {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+.badge.info {
+    background: var(--info-light);
+    color: var(--info);
+}
+
+/* ========== MODALES ========== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+}
+
+.modal-content h2 {
+    margin-bottom: 1.5rem;
+    color: var(--text);
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color var(--transition);
+}
+
+.modal-close:hover {
+    color: var(--text);
+}
+
+/* ========== TABLAS ========== */
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: var(--gray-100);
+    border-bottom: 2px solid var(--border);
+}
+
+.data-table th {
+    padding: 0.75rem;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.data-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.data-table tbody tr:hover {
+    background: var(--gray-50);
+}
+
+/* ========== UTILIDADES ========== */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.gap-1 {
+    gap: 0.5rem;
+}
+
+.gap-2 {
+    gap: 1rem;
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: var(--radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 968px) {
+    .navbar {
+        padding: 0 0.5rem;
+    }
+    
+    .navbar-stats {
+        display: none;
+    }
+    
+    .nav-btn {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+}

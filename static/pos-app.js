@@ -1,80 +1,9 @@
-// ============== ESTADO GLOBAL ==============
-const state = {
-    productos: [],
-    cart: [],
-    retiroCart: [],
-    selectedCategory: '',
-    selectedUnidad: '',
-    selectedMarca: '',
-    selectedPaymentMethod: 'efectivo',
-    editingProductId: null,
-    selectedProduct: null,
-    currentView: 'pos',
-    quickModeActive: false,
-    discountAmount: 0,
-    cashBox: {
-        isOpen: false,
-        initialAmount: 0,
-        operator: '',
-        openTime: null,
-        cashSales: 0,
-        cardSales: 0,
-        transferSales: 0,
-        withdrawals: 0
-    },
-    soundEnabled: true
-};
+// ============== POS-APP.JS ==============
+// Este archivo contiene la lógica específica del punto de venta
+// Las utilidades comunes están en common.js
 
-const API_URL = '/api';
-
-// ============== SISTEMA DE SONIDOS ==============
-class SoundSystem {
-    constructor() {
-        this.audioContext = null;
-        this.enabled = true;
-    }
-
-    async init() {
-        if (!this.audioContext) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-    }
-
-    async playBeep(frequency = 800, duration = 200, type = 'sine') {
-        if (!this.enabled) return;
-        
-        await this.init();
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-
-        oscillator.frequency.value = frequency;
-        oscillator.type = type;
-
-        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration / 1000);
-
-        oscillator.start(this.audioContext.currentTime);
-        oscillator.stop(this.audioContext.currentTime + duration / 1000);
-    }
-
-    success() { this.playBeep(800, 150); }
-    error() { this.playBeep(400, 300); }
-    warning() { this.playBeep(600, 200); }
-    scan() { this.playBeep(1000, 100); }
-    cashOpen() { this.playBeep(600, 200).then(() => setTimeout(() => this.playBeep(800, 200), 250)); }
-    cashClose() { this.playBeep(800, 200).then(() => setTimeout(() => this.playBeep(600, 200), 250)); }
-
-    toggle() {
-        this.enabled = !this.enabled;
-        if (this.enabled) this.success();
-        return this.enabled;
-    }
-}
-
-const sound = new SoundSystem();
+// Importar state, sound, API_URL, etc. desde common.js (cargado previamente)
+// Ya no necesitamos redefinirlos aquí
 
 // ============== CONTROL DE CAJA ==============
 function initCashControl() {
