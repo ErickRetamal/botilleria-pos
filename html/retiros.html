@@ -62,168 +62,183 @@
     </nav>
 
     <!-- Vista: Retiros -->
-    <div class="view active">
-        <div class="module-header">
-            <div class="header-info">
-                <h2 class="module-title">📤 Gestión de Retiros</h2>
-                <p class="module-subtitle">Registra consumo interno y pérdidas de inventario</p>
-            </div>
-            <div class="header-actions">
-                <button id="showRetiroStats" class="btn-action secondary">
-                    <span class="btn-icon">📊</span>
-                    <span class="btn-text">Estadísticas</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Panel de Alertas y Stats -->
-        <div class="retiro-alerts">
-            <div class="alert-card" id="alertaPerdidas" style="display: none;">
-                <div class="alert-icon">⚠️</div>
-                <div class="alert-content">
-                    <h4>Alerta de Pérdidas Altas</h4>
-                    <p id="alertaMensaje">Los retiros de hoy exceden el límite recomendado</p>
-                </div>
-            </div>
-            
-            <div class="stats-retiro">
-                <div class="stat-mini">
-                    <span class="stat-label">💸 Pérdidas Hoy</span>
-                    <span class="stat-value" id="perdidasHoy">$0</span>
-                </div>
-                <div class="stat-mini">
-                    <span class="stat-label">📦 Items Retirados</span>
-                    <span class="stat-value" id="itemsRetiradosHoy">0</span>
-                </div>
-                <div class="stat-mini">
-                    <span class="stat-label">📈 Promedio Semanal</span>
-                    <span class="stat-value" id="promedioSemanal">$0</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="retiro-container">
+    <main class="view active" role="tabpanel">
+        <div class="pos-container">
             <!-- Panel de Productos -->
-            <div class="products-panel">
+            <section class="products-panel" aria-label="Catálogo de productos para retiro">
                 <div class="search-section">
-                    <input 
-                        type="text" 
-                        id="retiroSearchInput" 
-                        placeholder="🔍 Buscar producto para retirar"
-                        class="search-input"
-                        autocomplete="off"
-                    >
+                    <div class="search-input-group">
+                        <input 
+                            type="text" 
+                            id="retiroSearchInput" 
+                            placeholder="🔍 Buscar producto para retirar (F2)"
+                            class="search-input"
+                            autocomplete="off"
+                            aria-label="Búsqueda de productos"
+                        >
+                        <button id="codeSearchBtn" class="btn-action secondary code-search-btn" title="Buscar por código de barras">
+                            <span class="btn-icon">📱</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtros compactos -->
+                <div class="pos-filters" role="region" aria-label="Filtros de productos">
+                    <div class="filter-row">
+                        <!-- Filtros de categoría como pills -->
+                        <div class="category-pills" role="radiogroup" aria-label="Filtrar por categoría">
+                            <button class="pill active" data-categoria="" role="radio" aria-checked="true">
+                                🌟 Todos
+                            </button>
+                            <button class="pill" data-categoria="Cervezas" role="radio" aria-checked="false">
+                                🍺
+                            </button>
+                            <button class="pill" data-categoria="Vinos" role="radio" aria-checked="false">
+                                🍷
+                            </button>
+                            <button class="pill" data-categoria="Licores" role="radio" aria-checked="false">
+                                🥃
+                            </button>
+                            <button class="pill" data-categoria="Bebidas" role="radio" aria-checked="false">
+                                🥤
+                            </button>
+                            <button class="pill" data-categoria="Snacks" role="radio" aria-checked="false">
+                                🍿
+                            </button>
+                        </div>
+                        
+                        <!-- Filtros adicionales en selects compactos -->
+                        <div class="filter-selects">
+                            <select id="unidadFilter" class="compact-select" aria-label="Filtrar por unidad">
+                                <option value="">⚖️ Unidad</option>
+                            </select>
+                            <select id="marcaFilter" class="compact-select" aria-label="Filtrar por marca">
+                                <option value="">🏭 Marca</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Grid de productos -->
-                <div id="retiroProductsGrid" class="products-grid"></div>
-            </div>
+                <div id="retiroProductsGrid" class="products-grid" role="grid" aria-label="Lista de productos disponibles"></div>
+            </section>
 
             <!-- Panel de Carrito de Retiro -->
-            <div class="cart-panel">
-                <div class="cart-header">
-                    <h2>📋 Items a Retirar</h2>
-                    <button id="clearRetiroCart" class="btn-action secondary">
+            <aside class="cart-panel" role="complementary" aria-label="Carrito de retiros">
+                <!-- Título del carrito -->
+                <div class="cart-title">
+                    <h2>📤 Carrito de Retiro</h2>
+                </div>
+                
+                <!-- Controles del carrito -->
+                <div class="cart-controls">
+                    <div class="quick-mode-toggle">
+                        <input type="checkbox" id="quickModeToggle" class="toggle-checkbox">
+                        <label for="quickModeToggle" class="toggle-label">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-text">⚡ Rápido</span>
+                        </label>
+                    </div>
+                    <button id="clearRetiroCart" class="btn-action secondary" aria-label="Limpiar carrito">
                         <span class="btn-icon">🗑️</span>
                         <span class="btn-text">Limpiar</span>
                     </button>
                 </div>
 
-                <div id="retiroCartItems" class="cart-items"></div>
-
-                <!-- Motivo del Retiro -->
-                <div class="retiro-motivo">
-                    <label for="motivoRetiro">🏷️ Motivo del Retiro</label>
-                    <select id="motivoRetiro" class="motivo-select">
-                        <option value="consumo_interno">🍺 Consumo Interno</option>
-                        <option value="perdida">💔 Pérdida/Rotura</option>
-                        <option value="vencido">📅 Producto Vencido</option>
-                        <option value="deteriorado">⚠️ Deteriorado</option>
-                        <option value="muestra">🎁 Muestra/Regalo</option>
-                        <option value="inventario">📋 Ajuste Inventario</option>
-                        <option value="otro">❓ Otro</option>
-                    </select>
+                <!-- Container de productos con scroll -->
+                <div class="cart-products-container">
+                    <div id="retiroCartItems" class="cart-items" role="list" aria-label="Productos en el carrito de retiro"></div>
                 </div>
 
-                <!-- Observaciones -->
-                <div class="retiro-observaciones">
-                    <label for="observacionesRetiro">📝 Observaciones</label>
-                    <textarea 
-                        id="observacionesRetiro" 
-                        placeholder="Describe el motivo del retiro (opcional)"
-                        rows="2"
-                    ></textarea>
-                </div>
-
-                <div class="cart-summary">
-                    <div class="summary-row">
-                        <span>Items:</span>
-                        <span id="retiroItemCount">0</span>
+                <!-- Sección fija inferior -->
+                <div class="cart-fixed-bottom">
+                    <!-- Motivo del Retiro -->
+                    <div class="discount-section">
+                        <div class="discount-header">
+                            <span>🏷️ Motivo del Retiro</span>
+                        </div>
+                        <div class="discount-controls">
+                            <select id="motivoRetiro" class="motivo-select" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem;">
+                                <option value="consumo_interno">🍺 Consumo Interno</option>
+                                <option value="perdida">💔 Pérdida/Rotura</option>
+                                <option value="vencido">📅 Producto Vencido</option>
+                                <option value="deteriorado">⚠️ Deteriorado</option>
+                                <option value="muestra">🎁 Muestra/Regalo</option>
+                                <option value="inventario">📋 Ajuste Inventario</option>
+                                <option value="otro">❓ Otro</option>
+                            </select>
+                            
+                            <!-- Observaciones -->
+                            <div style="margin-top: 0.75rem;">
+                                <label for="observacionesRetiro" style="display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">📝 Observaciones (opcional)</label>
+                                <textarea 
+                                    id="observacionesRetiro" 
+                                    placeholder="Describe el motivo del retiro..."
+                                    rows="2"
+                                    style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; resize: vertical;"
+                                ></textarea>
+                            </div>
+                        </div>
                     </div>
-                    <div class="summary-row">
-                        <span>💸 Impacto en Pérdidas:</span>
-                        <span id="impactoPerdidas" class="impact-amount">$0</span>
-                    </div>
-                    <div class="summary-row total warning">
-                        <span>PÉRDIDA TOTAL:</span>
-                        <span id="retiroTotal">$0</span>
-                    </div>
-                </div>
 
-                <div class="payment-section">
-                    <button id="processRetiro" class="btn-action danger" style="width: 100%; justify-content: center;">
-                        <span class="btn-icon">📎</span>
-                        <span class="btn-text">Registrar Retiro</span>
-                    </button>
+                    <footer class="cart-summary" role="region" aria-label="Resumen de retiro">
+                        <div class="summary-row">
+                            <span>Items:</span>
+                            <span id="retiroItemCount" aria-live="polite">0</span>
+                        </div>
+                        <div class="summary-row subtotal">
+                            <span>Subtotal:</span>
+                            <span id="retiroSubtotal" aria-live="polite">$0</span>
+                        </div>
+                        <div class="summary-row total warning">
+                            <span>PÉRDIDA TOTAL:</span>
+                            <span id="retiroTotal" class="value" aria-live="assertive">$0</span>
+                        </div>
+                    </footer>
+
+                    <div class="payment-section">
+                        <button id="processRetiro" class="btn-action danger" aria-label="Registrar retiro" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                            <span class="btn-icon">📤</span>
+                            <span class="btn-text">Registrar Retiro <span id="retiroTotalBtn">$0</span></span>
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </aside>
         </div>
-        
-        <!-- Panel de Historial -->
-        <div class="historial-section">
-            <div class="historial-header">
-                <h3>📋 Historial de Retiros</h3>
-                <div class="historial-filters">
-                    <select id="filtroMotivo" class="filter-select">
-                        <option value="">Todos los motivos</option>
-                        <option value="consumo_interno">Consumo Interno</option>
-                        <option value="perdida">Pérdida/Rotura</option>
-                        <option value="vencido">Vencido</option>
-                        <option value="deteriorado">Deteriorado</option>
-                        <option value="muestra">Muestra</option>
-                        <option value="inventario">Ajuste</option>
-                        <option value="otro">Otro</option>
-                    </select>
-                    <select id="filtroPeriodo" class="filter-select">
-                        <option value="hoy">Hoy</option>
-                        <option value="semana">Esta Semana</option>
-                        <option value="mes">Este Mes</option>
-                    </select>
-                </div>
+    </main>
+
+    <!-- Modal Búsqueda por Código -->
+    <div id="codeSearchModal" class="modal" style="display: none;">
+        <div class="modal-content code-modal">
+            <div class="modal-header">
+                <h2>🔍 Buscar por Código</h2>
+                <button class="modal-close">&times;</button>
             </div>
             
-            <div class="historial-container">
-                <table class="historial-table">
-                    <thead>
-                        <tr>
-                            <th>⏰ Hora</th>
-                            <th>📦 Producto</th>
-                            <th>📊 Cantidad</th>
-                            <th>💰 Valor</th>
-                            <th>🏷️ Motivo</th>
-                            <th>📝 Observaciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historialRetiros">
-                        <!-- Se llena dinámicamente -->
-                    </tbody>
-                </table>
+            <div class="modal-body">
+                <div class="code-input-group">
+                    <input type="text" id="codeSearchInput" placeholder="Escanea o escribe código" autocomplete="off">
+                    <button id="cameraBtn" class="btn-action secondary">
+                        <span class="btn-icon">📱</span>
+                        <span class="btn-text">Cámara</span>
+                    </button>
+                </div>
+                
+                <!-- Resultado de búsqueda -->
+                <div id="codeSearchResult" class="search-result" style="display: none;"></div>
+                
+                <!-- Scanner de cámara -->
+                <div id="cameraSection" style="display: none;">
+                    <video id="cameraVideo" autoplay playsinline></video>
+                    <canvas id="cameraCanvas" style="display: none;"></canvas>
+                    <button id="stopCameraBtn" class="btn-action secondary">Detener Cámara</button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
     <script src="/static/js/common.js"></script>
-    <script src="/static/pos-app.js"></script>
+    <script src="/static/retiros-app.js"></script>
 </body>
 </html>
